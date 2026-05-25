@@ -1,11 +1,12 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { requireParent } from '$lib/auth/session';
+import { parseUuid } from '$lib/schemas/util';
 import { db, schema } from '$lib/db';
 import { and, eq } from 'drizzle-orm';
 
 export const GET: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	const id = event.params.id;
+	const id = parseUuid(event.params.id);
 	if (!id) return json({ error: 'id_required' }, { status: 400 });
 	const [row] = await db()
 		.select({
@@ -25,7 +26,7 @@ export const GET: RequestHandler = async (event) => {
 
 export const DELETE: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	const id = event.params.id;
+	const id = parseUuid(event.params.id);
 	if (!id) return json({ error: 'id_required' }, { status: 400 });
 	const [row] = await db()
 		.select({ id: schema.runs.id })

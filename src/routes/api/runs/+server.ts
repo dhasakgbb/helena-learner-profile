@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { requireParent } from '$lib/auth/session';
 import { saveRunRequestSchema } from '$lib/schemas/runs';
+import { parseUuid } from '$lib/schemas/util';
 import { db, schema } from '$lib/db';
 import { and, desc, eq } from 'drizzle-orm';
 import type { RunPayload } from '$lib/types';
@@ -31,12 +32,12 @@ export const POST: RequestHandler = async (event) => {
 
 export const GET: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	const childIdParam = event.url.searchParams.get('child_id');
-	if (!childIdParam) return json({ error: 'child_id_required' }, { status: 400 });
+	const childId = parseUuid(event.url.searchParams.get('child_id'));
+	if (!childId) return json({ error: 'child_id_required' }, { status: 400 });
 	const [child] = await db()
 		.select({ id: schema.children.id })
 		.from(schema.children)
-		.where(and(eq(schema.children.id, childIdParam), eq(schema.children.parentId, parent.id)))
+		.where(and(eq(schema.children.id, childId), eq(schema.children.parentId, parent.id)))
 		.limit(1);
 	if (!child) return json({ error: 'child_not_found' }, { status: 404 });
 	const rows = await db()
@@ -47,7 +48,7 @@ export const GET: RequestHandler = async (event) => {
 			payload: schema.runs.payload
 		})
 		.from(schema.runs)
-		.where(eq(schema.runs.childId, childIdParam))
+		.where(eq(schema.runs.childId, childId))
 		.orderBy(desc(schema.runs.takenAt));
 	const summary = rows.map((r) => {
 		const payload = r.payload as RunPayload;

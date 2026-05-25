@@ -4,7 +4,16 @@
 	function close() {
 		open = false;
 	}
+
+	function onKey(e: KeyboardEvent) {
+		if (open && e.key === 'Escape') {
+			e.preventDefault();
+			close();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 <button
 	type="button"
@@ -34,7 +43,8 @@
 				Your answers are safe on this device. Step away as long as you need — when you come
 				back, everything will be right where you left it.
 			</p>
-			<button type="button" class="btn btn-primary w-full" onclick={close}>
+			<!-- svelte-ignore a11y_autofocus -->
+			<button type="button" class="btn btn-primary w-full" autofocus onclick={close}>
 				I'm ready to keep going
 			</button>
 		</div>

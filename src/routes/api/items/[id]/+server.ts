@@ -1,5 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { requireParent } from '$lib/auth/session';
+import { parseUuid } from '$lib/schemas/util';
 import {
 	itemUpdateSchema,
 	preferencesPayloadSchema,
@@ -27,16 +28,18 @@ function validatePayloadForKind(kind: string, payload: unknown) {
 
 export const GET: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	if (!event.params.id) return json({ error: 'id_required' }, { status: 400 });
-	const row = await loadOwnedItem(event.params.id, parent.id);
+	const id = parseUuid(event.params.id);
+	if (!id) return json({ error: 'id_required' }, { status: 400 });
+	const row = await loadOwnedItem(id, parent.id);
 	if (!row) return json({ error: 'not_found' }, { status: 404 });
 	return json({ item: row });
 };
 
 export const PATCH: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	if (!event.params.id) return json({ error: 'id_required' }, { status: 400 });
-	const row = await loadOwnedItem(event.params.id, parent.id);
+	const id = parseUuid(event.params.id);
+	if (!id) return json({ error: 'id_required' }, { status: 400 });
+	const row = await loadOwnedItem(id, parent.id);
 	if (!row) return json({ error: 'not_found' }, { status: 404 });
 	const body = await event.request.json().catch(() => ({}));
 	const parsed = itemUpdateSchema.safeParse(body);
@@ -75,8 +78,9 @@ export const PATCH: RequestHandler = async (event) => {
 
 export const DELETE: RequestHandler = async (event) => {
 	const parent = requireParent(event);
-	if (!event.params.id) return json({ error: 'id_required' }, { status: 400 });
-	const row = await loadOwnedItem(event.params.id, parent.id);
+	const id = parseUuid(event.params.id);
+	if (!id) return json({ error: 'id_required' }, { status: 400 });
+	const row = await loadOwnedItem(id, parent.id);
 	if (!row) return json({ error: 'not_found' }, { status: 404 });
 	await db()
 		.update(schema.items)

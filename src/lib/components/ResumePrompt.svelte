@@ -12,7 +12,16 @@
 		exploreStore.reset();
 		goto('/');
 	}
+
+	function onKey(e: KeyboardEvent) {
+		if (open && e.key === 'Escape') {
+			e.preventDefault();
+			resume();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 {#if open}
 	<div
@@ -32,7 +41,8 @@
 				start a fresh exploration from the welcome screen.
 			</p>
 			<div class="flex flex-col sm:flex-row gap-3">
-				<button class="btn btn-primary flex-1" onclick={resume}>Resume</button>
+				<!-- svelte-ignore a11y_autofocus -->
+				<button class="btn btn-primary flex-1" autofocus onclick={resume}>Resume</button>
 				<button class="btn btn-ghost flex-1" onclick={startOver}>Start over</button>
 			</div>
 		</div>

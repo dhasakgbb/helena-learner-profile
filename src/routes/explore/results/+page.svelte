@@ -11,7 +11,7 @@
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
 	import ExternalLink from '$lib/components/ExternalLink.svelte';
 	import { exportRunToPdf } from '$lib/pdf/export';
-	import { PREF_MODES, DOMAINS, type PrefMode, type Domain } from '$lib/types';
+	import { PREF_MODES, DOMAINS } from '$lib/types';
 	import type { LayoutData } from '../$types';
 
 	const { data }: { data: LayoutData } = $props();
@@ -36,14 +36,10 @@
 	const topMode = $derived.by(() => {
 		const scores = run.scores.preferences;
 		const sorted = PREF_MODES.slice().sort((a, b) => scores[b] - scores[a]);
-		return sorted[0]!;
-	});
-
-	const flaggedDomains = $derived.by(() => {
-		return DOMAINS.filter(
-			(d) =>
-				run.scores.screening[d].level === 'medium' || run.scores.screening[d].level === 'high'
-		);
+		// `PREF_MODES` is a const-length 4-tuple so sorted always has [0],
+		// but `noUncheckedIndexedAccess` widens to T | undefined. Fall back to
+		// 'visual' (semantic default) rather than crash if this ever changes.
+		return sorted[0] ?? 'visual';
 	});
 
 	const planCopy: Record<typeof run.scores.plan, { title: string; body: string }> = {

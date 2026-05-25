@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
+	import ErrorAlert from '$lib/components/ErrorAlert.svelte';
 	import { DOMAINS } from '$lib/types';
 	import { MIN_BIRTH_YEAR, MAX_BIRTH_YEAR } from '$lib/schemas/children';
 	import type { PageData } from './$types';
@@ -19,31 +20,51 @@
 		e.preventDefault();
 		addBusy = true;
 		addError = null;
-		const res = await fetch('/api/children', {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ display_name: newName, birth_year: Number(newYear) })
-		});
-		if (res.ok) {
-			newName = '';
-			newYear = 2015;
-			showAddChild = false;
-			await invalidateAll();
-		} else {
-			addError = 'Could not add child. Name 1–40 chars, birth year 2005–2025.';
+		try {
+			const res = await fetch('/api/children', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ display_name: newName, birth_year: Number(newYear) })
+			});
+			if (res.ok) {
+				newName = '';
+				newYear = MAX_BIRTH_YEAR - 10;
+				showAddChild = false;
+				await invalidateAll();
+			} else {
+				addError = `Could not add child. Name 1–40 characters, birth year ${MIN_BIRTH_YEAR}–${MAX_BIRTH_YEAR}.`;
+			}
+		} catch {
+			addError = 'Network error. Try again.';
+		} finally {
+			addBusy = false;
 		}
-		addBusy = false;
 	}
 
 	async function logout() {
-		await fetch('/api/auth/logout', { method: 'POST' });
+		try {
+			await fetch('/api/auth/logout', { method: 'POST' });
+		} catch {
+			// best-effort; if the request fails we still navigate home below
+		}
 		goto('/');
 	}
 
+	let deleteError = $state<string | null>(null);
+
 	async function deleteRun(id: string) {
 		if (!confirm('Delete this run? This cannot be undone.')) return;
-		const res = await fetch(`/api/runs/${id}`, { method: 'DELETE' });
-		if (res.status === 204) await invalidateAll();
+		deleteError = null;
+		try {
+			const res = await fetch(`/api/runs/${id}`, { method: 'DELETE' });
+			if (res.status === 204) {
+				await invalidateAll();
+			} else {
+				deleteError = 'Could not delete that run. Try again.';
+			}
+		} catch {
+			deleteError = 'Network error while deleting. Your run is still there.';
+		}
 	}
 
 	function planLabel(plan: string) {
@@ -76,6 +97,8 @@
 	</header>
 
 	<Disclaimer variant="parent" />
+
+	<ErrorAlert message={deleteError} />
 
 	{#if data.children.length === 0}
 		<section class="card flex flex-col gap-4">
@@ -114,11 +137,7 @@
 						required
 					/>
 				</div>
-				{#if addError}
-					<p class="text-[var(--color-rust)] text-[0.92rem] m-0" role="alert">
-						{addError}
-					</p>
-				{/if}
+				<ErrorAlert message={addError} />
 				<button class="btn btn-primary" type="submit" disabled={addBusy}>
 					{addBusy ? 'Adding…' : 'Add child'}
 				</button>
@@ -294,11 +313,7 @@
 							required
 						/>
 					</div>
-					{#if addError}
-						<p class="text-[var(--color-rust)] text-[0.92rem] m-0" role="alert">
-							{addError}
-						</p>
-					{/if}
+					<ErrorAlert message={addError} />
 					<button class="btn btn-primary self-start" type="submit" disabled={addBusy}>
 						{addBusy ? 'Adding…' : 'Add child'}
 					</button>

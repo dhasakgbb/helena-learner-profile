@@ -31,45 +31,58 @@ export const POST: RequestHandler = async (event) => {
 	}
 	const { kind, slug, payload, weight, parent_notes } = parsed.data;
 
-	// Compute next version for this owner + kind + slug; default to 1 if new.
-	const existing = await db()
-		.select({ v: max(schema.items.version) })
-		.from(schema.items)
-		.where(
-			and(
-				eq(schema.items.ownerId, parent.id),
-				eq(schema.items.kind, kind),
-				eq(schema.items.slug, slug)
-			)
-		);
-	const nextVersion = (existing[0]?.v ?? 0) + 1;
-
-	// If a prior version exists, deactivate it so only one is "live" per slug.
-	if (nextVersion > 1) {
-		await db()
-			.update(schema.items)
-			.set({ active: false, updatedAt: new Date() })
-			.where(
-				and(
-					eq(schema.items.ownerId, parent.id),
-					eq(schema.items.kind, kind),
-					eq(schema.items.slug, slug)
-				)
-			);
+	// Wrap version-bump + deactivate-old + insert-new in a single transaction
+	// so two concurrent POSTs for the same slug can't both compute the same
+	// nextVersion and crash on the UNIQUE (owner,kind,slug,version) constraint.
+	try {
+		const row = await db().transaction(async (tx) => {
+			const existing = await tx
+				.select({ v: max(schema.items.version) })
+				.from(schema.items)
+				.where(
+					and(
+						eq(schema.items.ownerId, parent.id),
+						eq(schema.items.kind, kind),
+						eq(schema.items.slug, slug)
+					)
+				);
+			const nextVersion = (existing[0]?.v ?? 0) + 1;
+			if (nextVersion > 1) {
+				await tx
+					.update(schema.items)
+					.set({ active: false, updatedAt: new Date() })
+					.where(
+						and(
+							eq(schema.items.ownerId, parent.id),
+							eq(schema.items.kind, kind),
+							eq(schema.items.slug, slug)
+						)
+					);
+			}
+			const [inserted] = await tx
+				.insert(schema.items)
+				.values({
+					ownerId: parent.id,
+					kind,
+					slug,
+					version: nextVersion,
+					payload,
+					weight: weight ?? 1.0,
+					parentNotes: parent_notes ?? null,
+					active: true
+				})
+				.returning();
+			return inserted;
+		});
+		return json({ item: row }, { status: 201 });
+	} catch (err) {
+		// If two concurrent POSTs still race past the transaction (e.g. read
+		// committed isolation lets both see the same max), the UNIQUE
+		// constraint surfaces as a 23505. Surface a stable retryable error.
+		const code = (err as { code?: string }).code;
+		if (code === '23505') {
+			return json({ error: 'version_conflict' }, { status: 409 });
+		}
+		throw err;
 	}
-
-	const [row] = await db()
-		.insert(schema.items)
-		.values({
-			ownerId: parent.id,
-			kind,
-			slug,
-			version: nextVersion,
-			payload,
-			weight: weight ?? 1.0,
-			parentNotes: parent_notes ?? null,
-			active: true
-		})
-		.returning();
-	return json({ item: row }, { status: 201 });
 };

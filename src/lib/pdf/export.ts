@@ -178,7 +178,7 @@ export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Pro
 	});
 	y -= 18;
 	if (run.scores.strengths_spotlight.length === 0) {
-		page.drawText('No strengths selected as "sounds like me" yet.', {
+		page.drawText('No strengths picked as "Sounds like me" yet.', {
 			x: margin,
 			y,
 			font: serifItalic,
