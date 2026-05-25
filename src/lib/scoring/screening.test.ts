@@ -111,4 +111,51 @@ describe('scoreScreening', () => {
 		expect(result.math.raw).toBe(0);
 		expect(result.attention.raw).toBe(0);
 	});
+
+	it('uses item weight to scale the percentage band', () => {
+		// Weight a single reading item at 3x; if the kid answers Often (3) on
+		// just that one weighted item and Never on the others, the weighted
+		// percentage is (3*3) / (3*4 + 1*4 + 1*4) = 9/20 = 45% → medium band.
+		const weighted = ITEMS.map((i) =>
+			i.id === 'r1' ? { ...i, weight: 3 } : { ...i, weight: 1 }
+		);
+		const answers: ScreeningAnswer[] = ITEMS.map((i) => ({
+			itemId: i.id,
+			kid: i.id === 'r1' ? (3 as const) : (0 as const),
+			parent: i.id === 'r1' ? (3 as const) : null
+		}));
+		const result = scoreScreening(weighted, answers);
+		expect(result.reading.level).toBe('medium');
+	});
+
+	it('weight=0 mutes an item entirely', () => {
+		// Reading item r1 muted; all reading items answered Almost Always (4).
+		// Without muting that'd be raw=12, level=high. With r1 muted: weighted
+		// sum = (0*4 + 1*4 + 1*4) = 8 of (0*4 + 1*4 + 1*4) = 8 → 100% → high.
+		// Now mute everything in reading.
+		const weighted = ITEMS.map((i) =>
+			i.domain === 'reading' ? { ...i, weight: 0 } : { ...i, weight: 1 }
+		);
+		const answers: ScreeningAnswer[] = ITEMS.map((i) => ({
+			itemId: i.id,
+			kid: i.domain === 'reading' ? (4 as const) : (0 as const),
+			parent: null
+		}));
+		const result = scoreScreening(weighted, answers);
+		// Reading domain entirely muted → percent undefined → low.
+		expect(result.reading.level).toBe('low');
+	});
+
+	it('default unspecified weight behaves as 1.0 (back-compat)', () => {
+		// Static items without a weight key should produce identical results
+		// to the original raw-band scoring.
+		const answers: ScreeningAnswer[] = ITEMS.map((i) => ({
+			itemId: i.id,
+			kid: 4,
+			parent: 4
+		}));
+		const result = scoreScreening(ITEMS, answers);
+		expect(result.reading.level).toBe('high');
+		expect(result.reading.raw).toBe(12);
+	});
 });

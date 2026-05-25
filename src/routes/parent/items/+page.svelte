@@ -300,7 +300,10 @@
 					id="ed-notes"
 					class="field-input"
 					rows="2"
-					bind:value={editing.row.parentNotes}
+					value={editing.row.parentNotes ?? ''}
+					oninput={(e) =>
+						(editing!.row.parentNotes =
+							(e.target as HTMLTextAreaElement).value || null)}
 					placeholder="Anything you want to remember about this item."
 				></textarea>
 			</div>

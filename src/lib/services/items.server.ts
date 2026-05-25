@@ -26,30 +26,26 @@ function staticItems(kind: ItemKind) {
 	return STRENGTHS_ITEMS;
 }
 
-async function dbItems(
-	kind: ItemKind,
-	ownerId: string | null
-): Promise<typeof schema.items.$inferSelect[] | null> {
+type DbFetchResult =
+	| { kind: 'rows'; rows: typeof schema.items.$inferSelect[] }
+	| { kind: 'unreachable' };
+
+async function dbItems(kind: ItemKind, ownerId: string | null): Promise<DbFetchResult> {
 	try {
-		const where = ownerId
-			? and(
-					eq(schema.items.ownerId, ownerId),
-					eq(schema.items.kind, kind),
-					eq(schema.items.active, true)
-				)
-			: and(
-					isNull(schema.items.ownerId),
-					eq(schema.items.kind, kind),
-					eq(schema.items.active, true)
-				);
+		const ownerWhere = ownerId
+			? eq(schema.items.ownerId, ownerId)
+			: isNull(schema.items.ownerId);
+		// Fetch *all* rows (active and retired) so we can distinguish two cases:
+		//   - parent has never touched this kind → 0 rows → static fallback
+		//   - parent has rows but retired them all → caller respects intent (empty)
 		const rows = await db()
 			.select()
 			.from(schema.items)
-			.where(where)
+			.where(and(ownerWhere, eq(schema.items.kind, kind)))
 			.orderBy(asc(schema.items.createdAt));
-		return rows;
+		return { kind: 'rows', rows };
 	} catch {
-		return null;
+		return { kind: 'unreachable' };
 	}
 }
 
@@ -76,16 +72,21 @@ export async function getActiveItems(
 	kind: ItemKind,
 	ownerId: string | null
 ): Promise<LoadedItem<AnyItem>[]> {
-	const rows = await dbItems(kind, ownerId);
-	if (rows && rows.length > 0) {
-		return rows.map((row) => ({
-			...(rowToItem(row) as AnyItem),
-			__source: 'db' as const,
-			__itemId: row.id,
-			__version: row.version,
-			__weight: row.weight
-		}));
+	const fetch = await dbItems(kind, ownerId);
+	if (fetch.kind === 'rows' && fetch.rows.length > 0) {
+		// Parent has rows for this kind. Respect their intent: return only the
+		// active ones (could be 0 if they retired everything — that's their call).
+		return fetch.rows
+			.filter((row) => row.active)
+			.map((row) => ({
+				...(rowToItem(row) as AnyItem),
+				__source: 'db' as const,
+				__itemId: row.id,
+				__version: row.version,
+				__weight: row.weight
+			}));
 	}
+	// No rows at all (or DB unreachable) → static starter bank.
 	return staticItems(kind).map((item) => ({
 		...(item as AnyItem),
 		__source: 'static' as const,

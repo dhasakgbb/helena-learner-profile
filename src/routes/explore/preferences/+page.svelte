@@ -56,7 +56,16 @@
 		</p>
 	</div>
 
-	{#if item}
+	{#if PREFERENCES_ITEMS.length === 0}
+		<div class="card flex flex-col gap-3">
+			<h2 class="m-0 font-display">No preferences questions to ask right now.</h2>
+			<p class="m-0 text-[var(--color-ink-soft)]">
+				It looks like the active question bank for this section is empty. A grown-up can
+				bring it back from the items page.
+			</p>
+			<a href="/parent/items" class="btn btn-ghost self-start">Manage items</a>
+		</div>
+	{:else if item}
 		<QuestionScenario
 			{item}
 			index={index}

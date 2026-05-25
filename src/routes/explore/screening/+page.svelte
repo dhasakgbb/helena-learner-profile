@@ -92,7 +92,15 @@
 		</div>
 	{/if}
 
-	{#if item}
+	{#if SCREENING_ITEMS.length === 0}
+		<div class="card flex flex-col gap-3">
+			<h2 class="m-0 font-display">No tricky-bits questions active.</h2>
+			<p class="m-0 text-[var(--color-ink-soft)]">
+				A grown-up can bring screening items back from the items page.
+			</p>
+			<a href="/parent/items" class="btn btn-ghost self-start">Manage items</a>
+		</div>
+	{:else if item}
 		<QuestionFrequency
 			{item}
 			index={index}

@@ -1,6 +1,11 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { requireParent } from '$lib/auth/session';
-import { itemUpdateSchema } from '$lib/schemas/items';
+import {
+	itemUpdateSchema,
+	preferencesPayloadSchema,
+	screeningPayloadSchema,
+	strengthsPayloadSchema
+} from '$lib/schemas/items';
 import { db, schema } from '$lib/db';
 import { and, eq } from 'drizzle-orm';
 
@@ -11,6 +16,13 @@ async function loadOwnedItem(id: string, parentId: string) {
 		.where(and(eq(schema.items.id, id), eq(schema.items.ownerId, parentId)))
 		.limit(1);
 	return row ?? null;
+}
+
+function validatePayloadForKind(kind: string, payload: unknown) {
+	if (kind === 'preferences') return preferencesPayloadSchema.safeParse(payload);
+	if (kind === 'screening') return screeningPayloadSchema.safeParse(payload);
+	if (kind === 'strengths') return strengthsPayloadSchema.safeParse(payload);
+	return { success: false as const, error: new Error('unknown kind') };
 }
 
 export const GET: RequestHandler = async (event) => {
@@ -40,7 +52,19 @@ export const PATCH: RequestHandler = async (event) => {
 	if (parsed.data.active !== undefined) updates.active = parsed.data.active;
 	if (parsed.data.weight !== undefined) updates.weight = parsed.data.weight;
 	if (parsed.data.parent_notes !== undefined) updates.parentNotes = parsed.data.parent_notes;
-	if (parsed.data.payload !== undefined) updates.payload = parsed.data.payload as object;
+	if (parsed.data.payload !== undefined) {
+		// Critical: payload must match the existing item's kind. Without this
+		// guard, a malicious or buggy client could replace a screening item's
+		// payload with a preferences shape and corrupt the bank.
+		const payloadCheck = validatePayloadForKind(row.kind, parsed.data.payload);
+		if (!payloadCheck.success) {
+			return json(
+				{ error: 'payload_kind_mismatch', kind: row.kind },
+				{ status: 400 }
+			);
+		}
+		updates.payload = payloadCheck.data as object;
+	}
 	const [updated] = await db()
 		.update(schema.items)
 		.set(updates)
@@ -50,8 +74,6 @@ export const PATCH: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	// Soft-delete: set active=false. We never hard-delete because historic
-	// runs may still reference the item id.
 	const parent = requireParent(event);
 	if (!event.params.id) return json({ error: 'id_required' }, { status: 400 });
 	const row = await loadOwnedItem(event.params.id, parent.id);
