@@ -3,6 +3,7 @@
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import BreakButton from '$lib/components/BreakButton.svelte';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
+	import ResumePrompt from '$lib/components/ResumePrompt.svelte';
 
 	let { children } = $props();
 
@@ -35,3 +36,5 @@
 
 	{@render children()}
 </main>
+
+<ResumePrompt />

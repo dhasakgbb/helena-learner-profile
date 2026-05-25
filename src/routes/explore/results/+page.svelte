@@ -147,7 +147,7 @@
 </svelte:head>
 
 <section class="flex flex-col gap-6">
-	<header class="flex flex-col gap-2">
+	<header class="flex flex-col gap-2 reveal" style:--i="0">
 		<span class="eyebrow">Your menu</span>
 		<h1 class="m-0 font-display">Here is what stood out today.</h1>
 		<p class="m-0 text-[var(--color-ink-soft)]">
@@ -156,7 +156,7 @@
 		</p>
 	</header>
 
-	<article class="card flex flex-col gap-5">
+	<article class="card flex flex-col gap-5 reveal" style:--i="1">
 		<div class="flex flex-col gap-1">
 			<span class="eyebrow">How you like to learn</span>
 			<h2 class="m-0 font-display">Top preference: {topMode.replace('_', ' / ')}</h2>
@@ -169,7 +169,7 @@
 	</article>
 
 	{#if run.scores.strengths_spotlight.length > 0}
-		<article class="card flex flex-col gap-3">
+		<article class="card flex flex-col gap-3 reveal" style:--i="2">
 			<div class="flex flex-col gap-1">
 				<span class="eyebrow">Spotlight</span>
 				<h2 class="m-0 font-display">Things you are great at.</h2>
@@ -210,7 +210,8 @@
 	{/if}
 
 	<article
-		class="card flex flex-col gap-4"
+		class="card flex flex-col gap-4 reveal"
+		style:--i="3"
 		style:background="var(--color-teal-soft)"
 	>
 		<div class="flex flex-col gap-1">
@@ -220,7 +221,7 @@
 		<p class="m-0 text-[1rem]">{planCopy[run.scores.plan].body}</p>
 	</article>
 
-	<article class="card flex flex-col gap-4">
+	<article class="card flex flex-col gap-4 reveal" style:--i="4">
 		<div class="flex flex-col gap-1">
 			<span class="eyebrow">Try this week</span>
 			<h2 class="m-0 font-display">Strategies that match how you learn.</h2>
@@ -240,7 +241,7 @@
 	</article>
 
 	{#if parentSignedIn || exploreStore.parentViewRequested}
-		<article class="card flex flex-col gap-4">
+		<article class="card flex flex-col gap-4 reveal" style:--i="5">
 			<button
 				class="flex items-center justify-between w-full text-left bg-transparent border-0 p-0 cursor-pointer"
 				onclick={() => (parentViewOpen = !parentViewOpen)}
@@ -316,7 +317,7 @@
 		</article>
 	{/if}
 
-	<article class="card flex flex-col gap-4">
+	<article class="card flex flex-col gap-4 reveal" style:--i="6" data-no-print>
 		<div class="flex flex-col gap-1">
 			<span class="eyebrow">Take it with you</span>
 			<h2 class="m-0 font-display">Keep this snapshot.</h2>

@@ -52,7 +52,17 @@ export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Pro
 	const muted = rgb(0.29, 0.27, 0.35);
 	const rust = rgb(0.73, 0.3, 0.21);
 	const teal = rgb(0.13, 0.36, 0.41);
+	const ochre = rgb(0.78, 0.57, 0.29);
+	const sage = rgb(0.36, 0.49, 0.36);
 	const paper = rgb(0.983, 0.962, 0.91);
+	const trackBg = rgb(0.93, 0.89, 0.81);
+
+	const PREF_COLORS: Record<PrefMode, ReturnType<typeof rgb>> = {
+		visual: rust,
+		auditory: teal,
+		read_write: ochre,
+		kinesthetic: sage
+	};
 
 	page.drawRectangle({ x: 0, y: 0, width, height, color: paper });
 
@@ -75,30 +85,61 @@ export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Pro
 	y -= 24;
 
 	page.drawText('Learning preferences', { x: margin, y, font: serifBold, size: 14, color: rust });
-	y -= 18;
-	for (const mode of PREF_MODES) {
-		const pct = run.scores.preferences[mode] ?? 0;
-		page.drawText(PREF_LABEL[mode], { x: margin, y, font: serif, size: 11, color: ink });
-		const barX = margin + 110;
-		const barW = 280;
-		page.drawRectangle({ x: barX, y: y - 2, width: barW, height: 7, color: rgb(0.92, 0.88, 0.8) });
-		page.drawRectangle({
-			x: barX,
-			y: y - 2,
-			width: (barW * pct) / 100,
-			height: 7,
-			color: rust
-		});
-		page.drawText(`${pct}%`, {
-			x: barX + barW + 8,
-			y,
-			font: serifBold,
-			size: 11,
+	y -= 22;
+
+	// Sort by score desc so the dominant preference reads first — matches the on-screen chart.
+	const sortedPrefs = [...PREF_MODES].sort(
+		(a, b) => (run.scores.preferences[b] ?? 0) - (run.scores.preferences[a] ?? 0)
+	);
+
+	const labelW = 95;
+	const barX = margin + labelW;
+	const barW = 270;
+	const barH = 9;
+	const rowGap = 24;
+
+	for (const mode of sortedPrefs) {
+		const pct = Math.max(0, Math.min(100, run.scores.preferences[mode] ?? 0));
+		const color = PREF_COLORS[mode];
+		// Mode label, left-aligned
+		page.drawText(PREF_LABEL[mode], {
+			x: margin,
+			y: y + 1,
+			font: serif,
+			size: 10.5,
 			color: ink
 		});
-		y -= 18;
+		// Bar track (full width, soft cream)
+		page.drawRectangle({
+			x: barX,
+			y: y - 1,
+			width: barW,
+			height: barH,
+			color: trackBg,
+			borderColor: trackBg,
+			borderWidth: 0
+		});
+		// Bar fill (percentage width, mode color)
+		if (pct > 0) {
+			page.drawRectangle({
+				x: barX,
+				y: y - 1,
+				width: (barW * pct) / 100,
+				height: barH,
+				color
+			});
+		}
+		// Percentage label, right of bar
+		page.drawText(`${pct}%`, {
+			x: barX + barW + 10,
+			y: y + 1,
+			font: serifBold,
+			size: 11,
+			color
+		});
+		y -= rowGap;
 	}
-	y -= 6;
+	y -= 4;
 
 	page.drawText('Areas worth watching', {
 		x: margin,

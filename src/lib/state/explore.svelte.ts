@@ -56,12 +56,17 @@ function persist(state: ExploreState) {
 
 function createStore() {
 	const initial = loadFromStorage();
+	const startedWithProgress =
+		initial.preferences.length > 0 ||
+		initial.screening.length > 0 ||
+		initial.strengths.length > 0;
 
 	let disclaimerAcked = $state(initial.disclaimerAcked);
 	let parentViewRequested = $state(initial.parentViewRequested);
 	let preferences = $state<PreferencesAnswer[]>(initial.preferences);
 	let screening = $state<ScreeningAnswer[]>(initial.screening);
 	let strengths = $state<StrengthsAnswer[]>(initial.strengths);
+	let resumePromptPending = $state(startedWithProgress);
 
 	function snapshot(): ExploreState {
 		return {
@@ -128,12 +133,19 @@ function createStore() {
 				preferences.length > 0 || screening.length > 0 || strengths.length > 0
 			);
 		},
+		get resumePromptPending() {
+			return resumePromptPending;
+		},
+		acknowledgeResume() {
+			resumePromptPending = false;
+		},
 		reset() {
 			disclaimerAcked = false;
 			parentViewRequested = false;
 			preferences = [];
 			screening = [];
 			strengths = [];
+			resumePromptPending = false;
 			if (typeof window !== 'undefined') {
 				try {
 					window.sessionStorage.removeItem(STORAGE_KEY);

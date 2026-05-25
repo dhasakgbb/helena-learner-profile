@@ -134,7 +134,51 @@
 				</header>
 
 				{#if runs.length === 0}
-					<p class="text-[var(--color-ink-soft)] m-0">No runs yet.</p>
+					<div
+						class="flex flex-col gap-3 p-4 rounded-[var(--radius-soft)] border-[1.5px] border-dashed"
+						style:border-color="var(--color-line)"
+						style:background="var(--color-paper-deep)"
+					>
+						<div class="flex items-start gap-3">
+							<svg
+								width="22"
+								height="22"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="var(--color-ochre)"
+								stroke-width="1.8"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="mt-0.5 shrink-0"
+								aria-hidden="true"
+							>
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							<p class="m-0 text-[var(--color-ink-soft)]">
+								No runs yet for {child.display_name}. The first one takes about ten
+								minutes — preferences, tricky bits, strengths — and lives here when
+								it's done.
+							</p>
+						</div>
+						<a href="/" class="btn btn-primary self-start">
+							Start an exploration with {child.display_name}
+							<svg
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<line x1="5" y1="12" x2="19" y2="12"></line>
+								<polyline points="12 5 19 12 12 19"></polyline>
+							</svg>
+						</a>
+					</div>
 				{:else}
 					<ul class="flex flex-col gap-3 list-none p-0 m-0">
 						{#each runs as run}
