@@ -8,32 +8,58 @@
 	--font-mono:
 		'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
+	/* Paper foundation — kept warm and inviting */
 	--color-paper: #fbf5e8;
-	--color-paper-deep: #f3ecda;
+	--color-paper-deep: #f4ead2;
 	--color-paper-edge: #e3d8bf;
 	--color-card: #fffaf0;
-	--color-ink: #1c1a26;
-	--color-ink-soft: #4a4458;
-	--color-ink-muted: #76708a;
-	--color-rust: #b94d36;
-	--color-rust-deep: #9a3a26;
-	--color-rust-soft: #f5dbcf;
-	--color-teal: #205c69;
-	--color-teal-deep: #0f3f4a;
-	--color-teal-soft: #c8dee2;
-	--color-ochre: #c89149;
-	--color-ochre-soft: #f3e3c4;
-	--color-sage: #5d7c5d;
-	--color-sage-soft: #d8e3d3;
-	--color-line: #d8cdb4;
+	--color-ink: #1d1027;
+	--color-ink-soft: #4a3a5c;
+	--color-ink-muted: #7a6c8e;
 
-	--radius-card: 1.15rem;
+	/* Riso-saturated accent set — saturated but earthy, not neon */
+	--color-coral: #e84c4a;
+	--color-coral-deep: #c0322f;
+	--color-coral-soft: #ffd9d6;
+
+	--color-sky: #2dabb8;
+	--color-sky-deep: #1c7c87;
+	--color-sky-soft: #c2eef1;
+
+	--color-sun: #f5c518;
+	--color-sun-deep: #c89a06;
+	--color-sun-soft: #fff1bf;
+
+	--color-leaf: #5fa84e;
+	--color-leaf-deep: #3f7d34;
+	--color-leaf-soft: #d6efcb;
+
+	/* Aliases the rest of the app already uses — re-pointed at the new
+	   palette so existing components don't all need rewrites. */
+	--color-rust: var(--color-coral);
+	--color-rust-deep: var(--color-coral-deep);
+	--color-rust-soft: var(--color-coral-soft);
+	--color-teal: var(--color-sky);
+	--color-teal-deep: var(--color-sky-deep);
+	--color-teal-soft: var(--color-sky-soft);
+	--color-ochre: var(--color-sun-deep);
+	--color-ochre-soft: var(--color-sun-soft);
+	--color-sage: var(--color-leaf-deep);
+	--color-sage-soft: var(--color-leaf-soft);
+
+	--color-line: #d6c8a8;
+
+	--radius-card: 1.4rem;
 	--radius-pill: 999px;
-	--radius-soft: 0.55rem;
+	--radius-soft: 0.65rem;
 
-	--shadow-card: 0 1px 0 rgb(28 26 38 / 0.04), 0 12px 28px -8px rgb(28 26 38 / 0.12),
-		inset 0 0 0 1px rgb(216 205 180 / 0.6);
-	--shadow-press: 0 1px 0 rgb(28 26 38 / 0.06), inset 0 0 0 1.5px rgb(28 26 38 / 0.85);
+	/* "Stamped" shadow — a flat solid offset that feels printed, not webby */
+	--shadow-stamp:
+		2px 3px 0 rgb(29 16 39 / 0.16),
+		0 0 0 1.5px rgb(214 200 168 / 0.6);
+	--shadow-stamp-press:
+		1px 1px 0 rgb(29 16 39 / 0.18),
+		0 0 0 1.5px rgb(214 200 168 / 0.6);
 }
 
 @layer base {
@@ -50,11 +76,14 @@
 
 	body {
 		background-image:
-			radial-gradient(circle at 10% 0%, rgb(200 145 73 / 0.05) 0%, transparent 30%),
-			radial-gradient(circle at 90% 20%, rgb(32 92 105 / 0.05) 0%, transparent 35%),
-			radial-gradient(circle at 50% 100%, rgb(185 77 54 / 0.04) 0%, transparent 40%),
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.11 0 0 0 0 0.10 0 0 0 0 0.15 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
-		background-attachment: fixed, fixed, fixed, fixed;
+			radial-gradient(circle at 6% 8%, rgb(245 197 24 / 0.12) 0%, transparent 22%),
+			radial-gradient(circle at 92% 18%, rgb(45 171 184 / 0.12) 0%, transparent 26%),
+			radial-gradient(circle at 18% 96%, rgb(232 76 74 / 0.1) 0%, transparent 28%),
+			radial-gradient(circle at 86% 88%, rgb(95 168 78 / 0.1) 0%, transparent 28%),
+			radial-gradient(circle at 10% 50%, rgb(29 16 39 / 0.04) 0.6px, transparent 0.7px),
+			radial-gradient(circle at 90% 50%, rgb(29 16 39 / 0.04) 0.6px, transparent 0.7px);
+		background-size: auto, auto, auto, auto, 22px 22px, 22px 22px;
+		background-attachment: fixed;
 		min-height: 100vh;
 	}
 
@@ -64,27 +93,38 @@
 	h4,
 	.font-display {
 		font-family: var(--font-display);
+		/* Variable axes: heavier weight + softer optical shape + slight wonk for warmth */
+		font-variation-settings:
+			'opsz' 144,
+			'wght' 700,
+			'SOFT' 80,
+			'WONK' 0;
 		font-feature-settings:
 			'ss01' on,
 			'ss02' on,
 			'liga' on;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.02em;
 	}
 
 	h1 {
-		font-weight: 600;
-		font-size: clamp(2rem, 5vw, 3rem);
-		line-height: 1.05;
+		font-weight: 700;
+		font-size: clamp(2.4rem, 6vw, 3.6rem);
+		line-height: 1;
 	}
 	h2 {
-		font-weight: 600;
-		font-size: clamp(1.5rem, 3.5vw, 2rem);
-		line-height: 1.15;
+		font-weight: 700;
+		font-size: clamp(1.6rem, 4vw, 2.15rem);
+		line-height: 1.1;
 	}
 	h3 {
-		font-weight: 500;
-		font-size: 1.35rem;
-		line-height: 1.2;
+		font-weight: 600;
+		font-size: 1.4rem;
+		line-height: 1.15;
+		font-variation-settings:
+			'opsz' 36,
+			'wght' 600,
+			'SOFT' 60,
+			'WONK' 0;
 	}
 
 	* {
@@ -96,7 +136,7 @@
 	}
 
 	::selection {
-		background: var(--color-ochre-soft);
+		background: var(--color-sun);
 		color: var(--color-ink);
 	}
 
@@ -110,7 +150,7 @@
 	}
 
 	:focus-visible {
-		outline: 2.5px solid var(--color-rust);
+		outline: 3px solid var(--color-coral);
 		outline-offset: 3px;
 		border-radius: 6px;
 	}
@@ -133,13 +173,14 @@
 		max-width: 720px;
 		margin: 0 auto;
 		padding: 1.5rem 1.25rem 5rem;
+		position: relative;
 	}
 
 	.card {
 		background: var(--color-card);
 		border-radius: var(--radius-card);
-		box-shadow: var(--shadow-card);
-		padding: 1.5rem 1.5rem 1.75rem;
+		box-shadow: var(--shadow-stamp);
+		padding: 1.6rem 1.6rem 1.85rem;
 		position: relative;
 	}
 
@@ -147,8 +188,34 @@
 		background: var(--color-card);
 		border-radius: var(--radius-card);
 		padding: 1.5rem;
-		border: 1.5px solid var(--color-line);
+		border: 2px solid var(--color-line);
 		position: relative;
+	}
+
+	/* Bright accent rail on the left edge of certain hero cards */
+	.card-rail-coral::before,
+	.card-rail-sky::before,
+	.card-rail-sun::before,
+	.card-rail-leaf::before {
+		content: '';
+		position: absolute;
+		left: -2px;
+		top: 1.2rem;
+		bottom: 1.2rem;
+		width: 6px;
+		border-radius: 999px;
+	}
+	.card-rail-coral::before {
+		background: var(--color-coral);
+	}
+	.card-rail-sky::before {
+		background: var(--color-sky);
+	}
+	.card-rail-sun::before {
+		background: var(--color-sun);
+	}
+	.card-rail-leaf::before {
+		background: var(--color-leaf);
 	}
 
 	.btn {
@@ -156,34 +223,38 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		padding: 0.75rem 1.25rem;
+		padding: 0.8rem 1.3rem;
 		font-family: var(--font-body);
-		font-weight: 600;
+		font-weight: 700;
 		font-size: 1rem;
 		border-radius: var(--radius-pill);
-		border: 1.5px solid transparent;
+		border: 2px solid transparent;
 		cursor: pointer;
 		transition:
-			transform 120ms ease,
-			background-color 120ms ease,
-			box-shadow 120ms ease;
+			transform 100ms ease,
+			box-shadow 100ms ease,
+			background-color 120ms ease;
 		text-decoration: none;
 		line-height: 1.25;
 		min-height: 48px;
 	}
 
 	.btn:active:not(:disabled) {
-		transform: translateY(1px);
+		transform: translate(1.5px, 2px);
 	}
 
 	.btn-primary {
-		background: var(--color-rust);
+		background: var(--color-coral);
 		color: #fff8ec;
-		border-color: var(--color-rust-deep);
-		box-shadow: 0 1px 0 var(--color-rust-deep);
+		border-color: var(--color-coral-deep);
+		box-shadow:
+			2px 3px 0 var(--color-coral-deep);
 	}
 	.btn-primary:hover:not(:disabled) {
-		background: var(--color-rust-deep);
+		background: var(--color-coral-deep);
+	}
+	.btn-primary:active:not(:disabled) {
+		box-shadow: 1px 1.5px 0 var(--color-coral-deep);
 	}
 	.btn-primary:disabled {
 		opacity: 0.55;
@@ -191,12 +262,16 @@
 	}
 
 	.btn-ghost {
-		background: transparent;
+		background: var(--color-card);
 		color: var(--color-ink);
-		border-color: var(--color-line);
+		border-color: var(--color-ink);
+		box-shadow: 2px 3px 0 var(--color-ink);
 	}
 	.btn-ghost:hover:not(:disabled) {
 		background: var(--color-paper-deep);
+	}
+	.btn-ghost:active:not(:disabled) {
+		box-shadow: 1px 1.5px 0 var(--color-ink);
 	}
 
 	.btn-quiet {
@@ -205,41 +280,50 @@
 		border-color: transparent;
 		padding: 0.55rem 0.85rem;
 		min-height: 44px;
+		box-shadow: none;
 	}
 	.btn-quiet:hover:not(:disabled) {
 		color: var(--color-ink);
 		background: var(--color-paper-deep);
+	}
+	.btn-quiet:active:not(:disabled) {
+		transform: none;
 	}
 
 	.tag {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		padding: 0.25rem 0.7rem;
-		font-size: 0.8rem;
-		font-weight: 600;
+		padding: 0.28rem 0.72rem;
+		font-size: 0.78rem;
+		font-weight: 700;
 		border-radius: var(--radius-pill);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.04em;
 		text-transform: uppercase;
+		border: 1.5px solid currentColor;
 	}
 
 	.tag-low {
-		background: var(--color-sage-soft);
-		color: var(--color-sage);
+		background: var(--color-leaf-soft);
+		color: var(--color-leaf-deep);
 	}
 	.tag-medium {
-		background: var(--color-ochre-soft);
-		color: #8a5a1d;
+		background: var(--color-sun-soft);
+		color: var(--color-sun-deep);
 	}
 	.tag-high {
-		background: var(--color-rust-soft);
-		color: var(--color-rust-deep);
+		background: var(--color-coral-soft);
+		color: var(--color-coral-deep);
 	}
 
 	.field-label {
 		font-family: var(--font-display);
-		font-weight: 500;
-		font-size: 1.1rem;
+		font-weight: 600;
+		font-variation-settings:
+			'opsz' 36,
+			'wght' 600,
+			'SOFT' 60;
+		font-size: 1.05rem;
 		color: var(--color-ink);
 		display: block;
 		margin-bottom: 0.4rem;
@@ -247,49 +331,54 @@
 
 	.field-input {
 		width: 100%;
-		padding: 0.75rem 0.9rem;
+		padding: 0.8rem 0.95rem;
 		font-family: var(--font-body);
 		font-size: 1rem;
 		background: var(--color-paper);
-		border: 1.5px solid var(--color-line);
+		border: 2px solid var(--color-line);
 		border-radius: var(--radius-soft);
 		color: var(--color-ink);
-		transition: border-color 120ms;
+		transition:
+			border-color 120ms,
+			box-shadow 120ms;
 	}
 	.field-input:focus {
 		outline: none;
-		border-color: var(--color-rust);
+		border-color: var(--color-coral);
+		box-shadow: 0 0 0 3px var(--color-coral-soft);
 	}
 
+	/* Hand-drawn-feeling divider — animated SVG wavy line in CSS */
 	.divider {
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			transparent,
-			var(--color-line) 20%,
-			var(--color-line) 80%,
-			transparent
-		);
+		height: 14px;
 		margin: 1.5rem 0;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 12' fill='none' stroke='%23d6c8a8' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M0 6 Q 10 0 20 6 T 40 6 T 60 6 T 80 6'/%3E%3C/svg%3E");
+		background-repeat: repeat-x;
+		background-position: left center;
+		background-size: 80px 12px;
 	}
 
 	.banner-disclaimer {
-		background: var(--color-ochre-soft);
-		border-left: 4px solid var(--color-ochre);
-		padding: 0.85rem 1rem;
+		background: var(--color-sun-soft);
+		border-left: 5px solid var(--color-sun);
+		padding: 0.9rem 1.1rem;
 		border-radius: 0 var(--radius-soft) var(--radius-soft) 0;
-		font-size: 0.92rem;
+		font-size: 0.94rem;
 		color: #5d4115;
 		line-height: 1.5;
 	}
 
 	.eyebrow {
 		text-transform: uppercase;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.2em;
 		font-size: 0.74rem;
-		font-weight: 700;
-		color: var(--color-ink-muted);
+		font-weight: 800;
+		color: var(--color-coral-deep);
 	}
+
+	.eyebrow-sky { color: var(--color-sky-deep); }
+	.eyebrow-sun { color: var(--color-sun-deep); }
+	.eyebrow-leaf { color: var(--color-leaf-deep); }
 
 	.reveal {
 		opacity: 0;
