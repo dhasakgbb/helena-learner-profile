@@ -203,7 +203,8 @@
 		background: transparent;
 		color: var(--color-ink-soft);
 		border-color: transparent;
-		padding: 0.5rem 0.85rem;
+		padding: 0.55rem 0.85rem;
+		min-height: 44px;
 	}
 	.btn-quiet:hover:not(:disabled) {
 		color: var(--color-ink);

@@ -94,6 +94,8 @@
 						type="text"
 						bind:value={newName}
 						maxlength="40"
+						autocomplete="given-name"
+						autocapitalize="words"
 						required
 					/>
 				</div>
@@ -106,6 +108,8 @@
 						bind:value={newYear}
 						min="2005"
 						max="2025"
+						inputmode="numeric"
+						pattern="[0-9]*"
 						required
 					/>
 				</div>
@@ -270,6 +274,8 @@
 							type="text"
 							bind:value={newName}
 							maxlength="40"
+							autocomplete="given-name"
+							autocapitalize="words"
 							required
 						/>
 					</div>
@@ -282,6 +288,8 @@
 							bind:value={newYear}
 							min="2005"
 							max="2025"
+							inputmode="numeric"
+							pattern="[0-9]*"
 							required
 						/>
 					</div>

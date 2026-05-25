@@ -12,6 +12,7 @@ const STORAGE_KEY = 'helena-explore-state-v1';
 type ExploreState = {
 	disclaimerAcked: boolean;
 	parentViewRequested: boolean;
+	resumeAcknowledged: boolean;
 	preferences: PreferencesAnswer[];
 	screening: ScreeningAnswer[];
 	strengths: StrengthsAnswer[];
@@ -21,6 +22,7 @@ function blank(): ExploreState {
 	return {
 		disclaimerAcked: false,
 		parentViewRequested: false,
+		resumeAcknowledged: false,
 		preferences: [],
 		screening: [],
 		strengths: []
@@ -36,6 +38,7 @@ function loadFromStorage(): ExploreState {
 		return {
 			disclaimerAcked: !!parsed.disclaimerAcked,
 			parentViewRequested: !!parsed.parentViewRequested,
+			resumeAcknowledged: !!parsed.resumeAcknowledged,
 			preferences: Array.isArray(parsed.preferences) ? parsed.preferences : [],
 			screening: Array.isArray(parsed.screening) ? parsed.screening : [],
 			strengths: Array.isArray(parsed.strengths) ? parsed.strengths : []
@@ -63,15 +66,20 @@ function createStore() {
 
 	let disclaimerAcked = $state(initial.disclaimerAcked);
 	let parentViewRequested = $state(initial.parentViewRequested);
+	let resumeAcknowledged = $state(initial.resumeAcknowledged);
 	let preferences = $state<PreferencesAnswer[]>(initial.preferences);
 	let screening = $state<ScreeningAnswer[]>(initial.screening);
 	let strengths = $state<StrengthsAnswer[]>(initial.strengths);
-	let resumePromptPending = $state(startedWithProgress);
+	// Only show the resume prompt when state was actually loaded AND the user
+	// hasn't already dismissed it for this session. Without persisting the
+	// dismissal, every reload would re-prompt the user.
+	let resumePromptPending = $state(startedWithProgress && !initial.resumeAcknowledged);
 
 	function snapshot(): ExploreState {
 		return {
 			disclaimerAcked,
 			parentViewRequested,
+			resumeAcknowledged,
 			preferences: $state.snapshot(preferences),
 			screening: $state.snapshot(screening),
 			strengths: $state.snapshot(strengths)
@@ -138,10 +146,13 @@ function createStore() {
 		},
 		acknowledgeResume() {
 			resumePromptPending = false;
+			resumeAcknowledged = true;
+			persist(snapshot());
 		},
 		reset() {
 			disclaimerAcked = false;
 			parentViewRequested = false;
+			resumeAcknowledged = false;
 			preferences = [];
 			screening = [];
 			strengths = [];

@@ -67,6 +67,10 @@
 				type="email"
 				bind:value={email}
 				autocomplete="email"
+				inputmode="email"
+				autocapitalize="off"
+				autocorrect="off"
+				spellcheck="false"
 				aria-invalid={emailError ? 'true' : undefined}
 				aria-describedby={emailError ? 'email-error' : undefined}
 				required
@@ -89,6 +93,9 @@
 				type="password"
 				bind:value={password}
 				autocomplete="current-password"
+				autocapitalize="off"
+				autocorrect="off"
+				spellcheck="false"
 				aria-invalid={passwordError ? 'true' : undefined}
 				aria-describedby={passwordError ? 'password-error' : undefined}
 				required

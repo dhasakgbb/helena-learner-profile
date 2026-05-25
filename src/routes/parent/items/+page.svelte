@@ -132,10 +132,10 @@
 			{/if}
 		</section>
 	{:else}
-		<nav class="flex gap-1 p-1 rounded-full self-start" style:background="var(--color-paper-deep)">
+		<nav class="flex flex-wrap gap-1 p-1 rounded-full self-start" style:background="var(--color-paper-deep)">
 			{#each ['preferences', 'screening', 'strengths'] as Kind[] as kind}
 				<button
-					class="px-4 py-1.5 rounded-full text-[0.88rem] font-semibold transition-colors"
+					class="px-4 py-2 rounded-full text-[0.88rem] font-semibold transition-colors min-h-[40px]"
 					style:background={activeKind === kind ? 'var(--color-card)' : 'transparent'}
 					style:color={activeKind === kind ? 'var(--color-ink)' : 'var(--color-ink-muted)'}
 					onclick={() => (activeKind = kind)}

@@ -71,7 +71,7 @@
 				<button
 					role="tab"
 					aria-selected={view === 'kid'}
-					class="px-3 py-1 rounded-full text-[0.85rem] font-semibold"
+					class="px-4 py-2 rounded-full text-[0.88rem] font-semibold min-h-[40px]"
 					style:background={view === 'kid' ? 'var(--color-card)' : 'transparent'}
 					style:color={view === 'kid' ? 'var(--color-ink)' : 'var(--color-ink-muted)'}
 					onclick={() => (view = 'kid')}
@@ -81,7 +81,7 @@
 				<button
 					role="tab"
 					aria-selected={view === 'parent'}
-					class="px-3 py-1 rounded-full text-[0.85rem] font-semibold"
+					class="px-4 py-2 rounded-full text-[0.88rem] font-semibold min-h-[40px]"
 					style:background={view === 'parent' ? 'var(--color-card)' : 'transparent'}
 					style:color={view === 'parent' ? 'var(--color-ink)' : 'var(--color-ink-muted)'}
 					onclick={() => (view = 'parent')}

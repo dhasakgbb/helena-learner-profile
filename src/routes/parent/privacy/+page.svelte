@@ -100,6 +100,11 @@
 							class="field-input"
 							type="email"
 							bind:value={confirmEmail}
+							autocomplete="email"
+							inputmode="email"
+							autocapitalize="off"
+							autocorrect="off"
+							spellcheck="false"
 							required
 						/>
 					</div>

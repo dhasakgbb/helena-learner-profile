@@ -70,7 +70,19 @@
 
 	onMount(async () => {
 		try {
-			confetti({ particleCount: 80, spread: 70, origin: { y: 0.3 } });
+			const reduce =
+				typeof window !== 'undefined' &&
+				window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+			if (!reduce) {
+				confetti({ particleCount: 80, spread: 70, origin: { y: 0.3 } });
+			}
+			// canvas-confetti creates a fixed canvas in the body — mark it
+			// aria-hidden so screen readers don't see "canvas" with no content.
+			requestAnimationFrame(() => {
+				document
+					.querySelectorAll('canvas')
+					.forEach((c) => c.setAttribute('aria-hidden', 'true'));
+			});
 		} catch {
 			// confetti can fail on some envs; skip silently
 		}
