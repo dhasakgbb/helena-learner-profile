@@ -54,9 +54,21 @@ export const runPayloadSchema = z.object({
 	})
 });
 
+export const itemVersionMapSchema = z.record(
+	z.string(),
+	z.object({ id: z.string().uuid().nullable(), version: z.number().int().min(0) })
+);
+
 export const saveRunRequestSchema = z.object({
 	child_id: z.string().uuid(),
-	payload: runPayloadSchema
+	payload: runPayloadSchema,
+	item_versions: z
+		.object({
+			preferences: itemVersionMapSchema,
+			screening: itemVersionMapSchema,
+			strengths: itemVersionMapSchema
+		})
+		.optional()
 });
 
 export type SaveRunRequest = z.infer<typeof saveRunRequestSchema>;

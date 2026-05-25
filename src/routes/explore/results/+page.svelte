@@ -4,25 +4,33 @@
 	import confetti from 'canvas-confetti';
 	import { exploreStore } from '$lib/state/explore.svelte';
 	import { buildRun } from '$lib/scoring/build-run';
-	import { SCREENING_ITEMS } from '$lib/data/screening-items';
+	import { snapshotVersions } from '$lib/services/items-shared';
 	import { STRENGTHS_ITEMS, STRENGTHS_AFFIRMATIONS } from '$lib/data/strengths-items';
 	import { PREFERENCE_STRATEGIES, DOMAIN_STRATEGIES } from '$lib/data/resources';
 	import ResultsChart from '$lib/components/ResultsChart.svelte';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
 	import { exportRunToPdf } from '$lib/pdf/export';
 	import { PREF_MODES, DOMAINS, type PrefMode, type Domain } from '$lib/types';
+	import type { LayoutData } from '../$types';
 
+	const { data }: { data: LayoutData } = $props();
 	const APP_VERSION = '0.1.0';
 
 	const run = $derived(
 		buildRun({
 			appVersion: APP_VERSION,
-			screeningItems: SCREENING_ITEMS,
+			screeningItems: data.items.screening,
 			preferences: exploreStore.preferences,
 			screening: exploreStore.screening,
 			strengths: exploreStore.strengths
 		})
 	);
+
+	const itemVersions = $derived({
+		preferences: snapshotVersions(data.items.preferences),
+		screening: snapshotVersions(data.items.screening),
+		strengths: snapshotVersions(data.items.strengths)
+	});
 
 	const topMode = $derived.by(() => {
 		const scores = run.scores.preferences;
@@ -114,7 +122,11 @@
 			const res = await fetch('/api/runs', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ child_id: childId, payload: run })
+				body: JSON.stringify({
+					child_id: childId,
+					payload: run,
+					item_versions: itemVersions
+				})
 			});
 			if (res.status === 401) {
 				saveStatus = 'unauthorized';

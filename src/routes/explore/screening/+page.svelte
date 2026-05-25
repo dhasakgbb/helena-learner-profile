@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { SCREENING_ITEMS } from '$lib/data/screening-items';
 	import QuestionFrequency from '$lib/components/QuestionFrequency.svelte';
 	import { exploreStore } from '$lib/state/explore.svelte';
 	import type { FrequencyAnswer } from '$lib/types';
+	import type { LayoutData } from '../$types';
+
+	const { data }: { data: LayoutData } = $props();
+	const SCREENING_ITEMS = $derived(data.items.screening);
 
 	let index = $state(0);
 	let view = $state<'kid' | 'parent'>('kid');

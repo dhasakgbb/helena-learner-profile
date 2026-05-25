@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { STRENGTHS_ITEMS } from '$lib/data/strengths-items';
 	import QuestionLikert from '$lib/components/QuestionLikert.svelte';
 	import { exploreStore } from '$lib/state/explore.svelte';
 	import type { LikertAnswer } from '$lib/types';
+	import type { LayoutData } from '../$types';
+
+	const { data }: { data: LayoutData } = $props();
+	const STRENGTHS_ITEMS = $derived(data.items.strengths);
 
 	let index = $state(0);
 

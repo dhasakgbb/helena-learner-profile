@@ -10,7 +10,7 @@ export const POST: RequestHandler = async (event) => {
 	const body = await event.request.json().catch(() => ({}));
 	const parsed = saveRunRequestSchema.safeParse(body);
 	if (!parsed.success) return json({ error: 'validation_failed' }, { status: 400 });
-	const { child_id, payload } = parsed.data;
+	const { child_id, payload, item_versions } = parsed.data;
 	const [child] = await db()
 		.select({ id: schema.children.id })
 		.from(schema.children)
@@ -22,7 +22,8 @@ export const POST: RequestHandler = async (event) => {
 		.values({
 			childId: child_id,
 			payload: payload,
-			appVersion: payload.app_version
+			appVersion: payload.app_version,
+			itemVersions: item_versions ?? null
 		})
 		.returning({ id: schema.runs.id, taken_at: schema.runs.takenAt });
 	return json({ run: row }, { status: 201 });

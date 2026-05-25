@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { PREFERENCES_ITEMS } from '$lib/data/preferences-items';
 	import QuestionScenario from '$lib/components/QuestionScenario.svelte';
 	import { exploreStore } from '$lib/state/explore.svelte';
 	import type { PrefMode } from '$lib/types';
+	import type { LayoutData } from '../$types';
+
+	const { data }: { data: LayoutData } = $props();
+	const PREFERENCES_ITEMS = $derived(data.items.preferences);
 
 	let index = $state(0);
 
