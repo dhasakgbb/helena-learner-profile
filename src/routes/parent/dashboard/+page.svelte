@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
 	import { DOMAINS } from '$lib/types';
+	import { MIN_BIRTH_YEAR, MAX_BIRTH_YEAR } from '$lib/schemas/children';
 	import type { PageData } from './$types';
 	import type { RunPayload } from '$lib/types';
 
@@ -9,7 +10,7 @@
 
 	let showAddChild = $state(false);
 	let newName = $state('');
-	let newYear = $state(2015);
+	let newYear = $state(MAX_BIRTH_YEAR - 10);
 	let addBusy = $state(false);
 	let addError = $state<string | null>(null);
 	let openRunId = $state<string | null>(null);
@@ -106,8 +107,8 @@
 						class="field-input"
 						type="number"
 						bind:value={newYear}
-						min="2005"
-						max="2025"
+						min={MIN_BIRTH_YEAR}
+						max={MAX_BIRTH_YEAR}
 						inputmode="numeric"
 						pattern="[0-9]*"
 						required

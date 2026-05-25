@@ -9,6 +9,7 @@
 	import { PREFERENCE_STRATEGIES, DOMAIN_STRATEGIES } from '$lib/data/resources';
 	import ResultsChart from '$lib/components/ResultsChart.svelte';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
+	import ExternalLink from '$lib/components/ExternalLink.svelte';
 	import { exportRunToPdf } from '$lib/pdf/export';
 	import { PREF_MODES, DOMAINS, type PrefMode, type Domain } from '$lib/types';
 	import type { LayoutData } from '../$types';
@@ -321,13 +322,10 @@
 													{card.body}
 												</div>
 												{#if card.link}
-													<a
+													<ExternalLink
 														href={card.link.href}
-														target="_blank"
-														rel="noopener"
-														class="text-[0.85rem] underline mt-1 inline-block"
-														style:color="var(--color-rust)">{card.link.label} →</a
-													>
+														label={card.link.label}
+													/>
 												{/if}
 											</li>
 										{/each}

@@ -27,10 +27,80 @@
 	});
 
 	const KIND_LABELS: Record<Kind, string> = {
-		preferences: 'Preferences (10 scenarios)',
-		screening: 'Screening (12 items)',
-		strengths: 'Strengths (6 items)'
+		preferences: 'Preferences',
+		screening: 'Screening',
+		strengths: 'Strengths'
 	};
+
+	function slugify(s: string): string {
+		const base = s
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '')
+			.slice(0, 40);
+		return base || `item-${Date.now().toString(36)}`;
+	}
+
+	function blankPayloadFor(kind: Kind): unknown {
+		if (kind === 'preferences') {
+			return {
+				prompt: '',
+				multiSelect: false,
+				options: [
+					{ tag: 'visual', text: '' },
+					{ tag: 'auditory', text: '' },
+					{ tag: 'read_write', text: '' },
+					{ tag: 'kinesthetic', text: '' }
+				]
+			};
+		}
+		if (kind === 'screening') {
+			return { domain: 'reading', kidPrompt: '', parentPrompt: '' };
+		}
+		return { prompt: '' };
+	}
+
+	let adding = $state(false);
+	let newKind = $state<Kind>('preferences');
+	let newSlug = $state('');
+	let newPayload = $state<unknown>(blankPayloadFor('preferences'));
+	let newError = $state<string | null>(null);
+	let newBusy = $state(false);
+
+	function startAdd(kind: Kind) {
+		adding = true;
+		newKind = kind;
+		newSlug = '';
+		newPayload = blankPayloadFor(kind);
+		newError = null;
+	}
+
+	function cancelAdd() {
+		adding = false;
+	}
+
+	async function saveNew() {
+		newBusy = true;
+		newError = null;
+		const slug = newSlug.trim() ? slugify(newSlug) : slugify(
+			(newPayload as { prompt?: string; kidPrompt?: string }).prompt ??
+				(newPayload as { kidPrompt?: string }).kidPrompt ??
+				''
+		);
+		const res = await fetch('/api/items', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ kind: newKind, slug, payload: newPayload })
+		});
+		if (res.ok) {
+			adding = false;
+			await invalidateAll();
+		} else {
+			const j = await res.json().catch(() => ({}));
+			newError = j.error === 'validation_failed' ? 'Please fill every field.' : 'Save failed.';
+		}
+		newBusy = false;
+	}
 
 	async function seed() {
 		seeding = true;
@@ -132,18 +202,36 @@
 			{/if}
 		</section>
 	{:else}
-		<nav class="flex flex-wrap gap-1 p-1 rounded-full self-start" style:background="var(--color-paper-deep)">
+		<nav class="flex w-full gap-1 p-1 rounded-full" style:background="var(--color-paper-deep)">
 			{#each ['preferences', 'screening', 'strengths'] as Kind[] as kind}
+				{@const count = itemsByKind[kind].length}
 				<button
-					class="px-4 py-2 rounded-full text-[0.88rem] font-semibold transition-colors min-h-[40px]"
+					class="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-full text-[0.88rem] font-semibold transition-colors min-h-[44px]"
 					style:background={activeKind === kind ? 'var(--color-card)' : 'transparent'}
 					style:color={activeKind === kind ? 'var(--color-ink)' : 'var(--color-ink-muted)'}
 					onclick={() => (activeKind = kind)}
 				>
-					{KIND_LABELS[kind]}
+					<span>{KIND_LABELS[kind]}</span>
+					<span
+						class="text-[0.72rem] font-mono px-1.5 py-0.5 rounded-full"
+						style:background={activeKind === kind
+							? 'var(--color-paper-deep)'
+							: 'var(--color-card)'}
+						style:color="var(--color-ink-muted)"
+					>{count}</span>
 				</button>
 			{/each}
 		</nav>
+
+		<div class="flex justify-end">
+			<button class="btn btn-ghost text-[0.9rem]" onclick={() => startAdd(activeKind)}>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<line x1="12" y1="5" x2="12" y2="19"></line>
+					<line x1="5" y1="12" x2="19" y2="12"></line>
+				</svg>
+				Add new {KIND_LABELS[activeKind].toLowerCase()} item
+			</button>
+		</div>
 
 		<ul class="flex flex-col gap-3 list-none p-0 m-0">
 			{#each itemsByKind[activeKind] as row}
@@ -206,6 +294,103 @@
 		</ul>
 	{/if}
 </section>
+
+{#if adding}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+		style:background="color-mix(in srgb, var(--color-ink) 38%, transparent)"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="card max-w-xl w-full flex flex-col gap-4 my-4">
+			<header class="flex items-center justify-between gap-3">
+				<h2 class="m-0 font-display">Add {KIND_LABELS[newKind].toLowerCase()} item</h2>
+				<button class="btn btn-quiet" onclick={cancelAdd}>Cancel</button>
+			</header>
+
+			<div>
+				<label class="field-label" for="new-slug">Slug (optional — auto-generated from prompt)</label>
+				<input
+					id="new-slug"
+					class="field-input"
+					type="text"
+					bind:value={newSlug}
+					placeholder="e.g. p11-trains"
+					autocapitalize="off"
+					autocorrect="off"
+					spellcheck="false"
+				/>
+			</div>
+
+			{#if newKind === 'preferences'}
+				{@const p = newPayload as {
+					prompt: string;
+					multiSelect: boolean;
+					options: { tag: string; text: string }[];
+				}}
+				<div>
+					<label class="field-label" for="new-prompt">Prompt</label>
+					<textarea id="new-prompt" class="field-input" rows="2" bind:value={p.prompt}></textarea>
+				</div>
+				<label class="flex items-center gap-2 cursor-pointer text-[0.92rem]">
+					<input type="checkbox" bind:checked={p.multiSelect} />
+					Allow multi-select
+				</label>
+				<div class="flex flex-col gap-2">
+					<span class="field-label">Options (one per tag)</span>
+					{#each p.options as opt}
+						<div class="flex items-center gap-2">
+							<span class="text-[0.78rem] w-24 font-mono text-[var(--color-ink-muted)]">
+								{opt.tag}
+							</span>
+							<input class="field-input flex-1" bind:value={opt.text} />
+						</div>
+					{/each}
+				</div>
+			{:else if newKind === 'screening'}
+				{@const p = newPayload as {
+					domain: string;
+					kidPrompt: string;
+					parentPrompt: string;
+				}}
+				<div>
+					<label class="field-label" for="new-domain">Domain</label>
+					<select id="new-domain" class="field-input" bind:value={p.domain}>
+						<option value="reading">Reading</option>
+						<option value="writing">Writing</option>
+						<option value="math">Math</option>
+						<option value="attention">Attention</option>
+					</select>
+				</div>
+				<div>
+					<label class="field-label" for="new-kid">Kid prompt (first-person, "I…")</label>
+					<textarea id="new-kid" class="field-input" rows="2" bind:value={p.kidPrompt}></textarea>
+				</div>
+				<div>
+					<label class="field-label" for="new-parent">Parent prompt (third-person, "She…")</label>
+					<textarea id="new-parent" class="field-input" rows="2" bind:value={p.parentPrompt}></textarea>
+				</div>
+			{:else}
+				{@const p = newPayload as { prompt: string }}
+				<div>
+					<label class="field-label" for="new-prompt-s">Strength prompt</label>
+					<textarea id="new-prompt-s" class="field-input" rows="2" bind:value={p.prompt}></textarea>
+				</div>
+			{/if}
+
+			{#if newError}
+				<p class="text-[var(--color-rust)] text-[0.92rem] m-0" role="alert">{newError}</p>
+			{/if}
+
+			<div class="flex gap-3">
+				<button class="btn btn-primary flex-1" disabled={newBusy} onclick={saveNew}>
+					{newBusy ? 'Saving…' : 'Add item'}
+				</button>
+				<button class="btn btn-ghost" onclick={cancelAdd}>Cancel</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 {#if editing}
 	<div

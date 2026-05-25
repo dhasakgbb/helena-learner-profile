@@ -5,6 +5,7 @@
 		PROFESSIONAL_HELP_LINKS
 	} from '$lib/data/resources';
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
+	import ExternalLink from '$lib/components/ExternalLink.svelte';
 	import { PREF_MODES, DOMAINS } from '$lib/types';
 
 	const MODE_TITLE: Record<string, string> = {
@@ -78,13 +79,7 @@
 							<div class="font-display text-[1rem]">{card.title}</div>
 							<p class="m-0 text-[0.93rem] text-[var(--color-ink-soft)]">{card.body}</p>
 							{#if card.link}
-								<a
-									href={card.link.href}
-									target="_blank"
-									rel="noopener"
-									class="text-[0.85rem] underline mt-1 inline-block"
-									style:color="var(--color-rust)">{card.link.label} →</a
-								>
+								<ExternalLink href={card.link.href} label={card.link.label} />
 							{/if}
 						</li>
 					{/each}
@@ -110,13 +105,7 @@
 					<div class="font-display text-[1rem]">{link.title}</div>
 					<p class="m-0 text-[0.93rem] text-[var(--color-ink-soft)]">{link.body}</p>
 					{#if link.link}
-						<a
-							href={link.link.href}
-							target="_blank"
-							rel="noopener"
-							class="text-[0.85rem] underline mt-1 inline-block"
-							style:color="var(--color-rust)">{link.link.label} →</a
-						>
+						<ExternalLink href={link.link.href} label={link.link.label} />
 					{/if}
 				</li>
 			{/each}

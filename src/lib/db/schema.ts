@@ -32,9 +32,12 @@ export const children = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 	},
 	(table) => ({
+		// Wide soft floor at the DB level; the actual UX-facing min/max lives
+		// in $lib/schemas/children.ts and tracks the current year. The DB check
+		// is here to catch only obviously-bogus values (year 1900, year 9999).
 		birthYearRange: check(
 			'children_birth_year_range',
-			sql`${table.birthYear} BETWEEN 2005 AND 2025`
+			sql`${table.birthYear} BETWEEN 1990 AND 2100`
 		)
 	})
 );
