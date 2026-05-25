@@ -1,12 +1,26 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	let { text, label = 'Read this aloud' }: { text: string; label?: string } = $props();
 	let speaking = $state(false);
 	let supported = $state(false);
+	let currentUtter: SpeechSynthesisUtterance | null = null;
 
 	onMount(() => {
 		supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+	});
+
+	onDestroy(() => {
+		// Don't orphan a running utterance when the user navigates away. Some
+		// browsers (Chrome) keep speaking after the component unmounts otherwise.
+		if (supported && typeof window !== 'undefined') {
+			try {
+				window.speechSynthesis.cancel();
+			} catch {
+				// noop — best-effort cleanup
+			}
+		}
+		currentUtter = null;
 	});
 
 	function toggle() {
@@ -15,14 +29,22 @@
 		if (speaking) {
 			synth.cancel();
 			speaking = false;
+			currentUtter = null;
 			return;
 		}
 		synth.cancel();
 		const utter = new SpeechSynthesisUtterance(text);
 		utter.rate = 0.95;
 		utter.pitch = 1.05;
-		utter.onend = () => (speaking = false);
-		utter.onerror = () => (speaking = false);
+		utter.onend = () => {
+			speaking = false;
+			currentUtter = null;
+		};
+		utter.onerror = () => {
+			speaking = false;
+			currentUtter = null;
+		};
+		currentUtter = utter;
 		synth.speak(utter);
 		speaking = true;
 	}

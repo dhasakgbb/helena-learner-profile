@@ -85,6 +85,20 @@ describe('scoreScreening', () => {
 		expect(result.attention.level).toBe('low');
 	});
 
+	it('parent-only answers contribute zero to kid raw score and surface as low', () => {
+		// Edge case from screening UI: user toggles to parent view and never answers
+		// the kid prompt. The kid score should be 0 (not whatever the parent said).
+		const answers: ScreeningAnswer[] = ITEMS.map((i) => ({
+			itemId: i.id,
+			kid: null,
+			parent: 4
+		}));
+		const result = scoreScreening(ITEMS, answers);
+		expect(result.reading.raw).toBe(0);
+		expect(result.reading.level).toBe('low');
+		expect(result.reading.needs_corroboration).toBe(false);
+	});
+
 	it('handles missing answers as Never (0) for kid scoring', () => {
 		const sparse: ScreeningAnswer[] = ITEMS.slice(0, 6).map((i) => ({
 			itemId: i.id,

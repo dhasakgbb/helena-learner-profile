@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { credentialsSchema } from '$lib/schemas/auth';
-import { verifyPassword } from '$lib/auth/password';
+import { verifyPassword, verifyPasswordTimingSafeDummy } from '$lib/auth/password';
 import { setSessionCookie } from '$lib/auth/session';
 import { checkRateLimit } from '$lib/auth/rate-limit';
 import { db, schema } from '$lib/db';
@@ -35,7 +35,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 		.where(eq(schema.parents.email, email))
 		.limit(1);
 	if (!row) {
-		await verifyPassword(password, '$2b$12$0000000000000000000000.00000000000000000000000000000000');
+		await verifyPasswordTimingSafeDummy(password);
 		return json({ error: 'invalid_credentials' }, { status: 401 });
 	}
 	const ok = await verifyPassword(password, row.passwordHash);
