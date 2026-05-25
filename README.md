@@ -39,12 +39,30 @@ npm run check              # svelte-check
 
 ## Deploy
 
-Connected to Vercel via the GitHub repo. `main` deploys to production. Postgres is provisioned through Vercel Storage; required env vars:
+Live at **https://helena-learner-profile.vercel.app**.
 
-- `DATABASE_URL` — Vercel Postgres (Neon) connection string
-- `JWT_SECRET` — 32+ random bytes
-- `APP_VERSION` — semver string stamped into saved runs
-- `PUBLIC_APP_URL` — public URL for PDF link-backs
+`main` auto-deploys to production via the Vercel ↔ GitHub integration.
+
+### Already configured
+- `JWT_SECRET` — generated, set in Vercel env (Production + Development)
+- `APP_VERSION = 0.1.0`
+- `PUBLIC_APP_URL = https://helena-learner-profile.vercel.app`
+
+### Manual step needed for parent dashboard (~60 seconds)
+
+The kid-facing flow works fully without a database. The parent dashboard (sign-up, save run, history) needs a Postgres database — Vercel's CLI no longer provisions storage, so the one-time step is in the Vercel dashboard:
+
+1. Visit **https://vercel.com/dhasakgbbs-projects/helena-learner-profile/stores**
+2. Click **Create Database → Postgres** (Neon-backed, free tier is fine).
+3. Vercel automatically injects `DATABASE_URL` (plus `POSTGRES_*` aliases) into the project's env vars and triggers a redeploy.
+4. After the redeploy completes, apply the Drizzle schema once:
+   ```bash
+   vercel env pull .env                      # pulls DATABASE_URL to local .env
+   npm run db:push                            # creates parents/children/runs tables
+   ```
+5. Sign up at `/parent/signup` to verify.
+
+Until step 1 is done, the auth endpoints return `{"error":"server_not_configured"}` with status 500 — the rest of the app still works.
 
 ## Known v1 limitations
 
