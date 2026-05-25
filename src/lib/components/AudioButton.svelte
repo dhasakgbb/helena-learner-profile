@@ -53,7 +53,7 @@
 {#if supported}
 	<button
 		type="button"
-		class="btn btn-quiet inline-flex items-center gap-1.5 text-[0.85rem]"
+		class="btn btn-quiet inline-flex items-center gap-1.5 text-[0.85rem] shrink-0 whitespace-nowrap"
 		aria-label={label}
 		aria-pressed={speaking}
 		data-testid="audio-button"
