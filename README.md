@@ -1,42 +1,59 @@
-# sv
+# Helena's Learner Profile
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A child-friendly web app that helps a 10-year-old (and her parent) explore:
 
-## Creating a project
+1. **Current learning preferences** — what feels easiest and most fun right now.
+2. **Areas that might be tricky** — informal screening across reading, writing, math, and attention.
+3. **What to do next** — a personalized Learning Menu plus a clear decision tree about when to seek professional input.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## What this app is not
 
-```sh
-# create a new project
-npx sv create my-app
+It is **not** a diagnostic tool. It cannot identify learning disabilities. Every results screen repeats this — results are a conversation starter, not a label. If a domain flags `medium` or `high`, talk to her teacher and pediatrician.
+
+## Stack
+
+- SvelteKit 2 (Svelte 5 runes) + TypeScript strict
+- Tailwind CSS v4
+- Drizzle ORM → Vercel Postgres (Neon)
+- bcryptjs + jose (JWT) for auth (httpOnly cookies)
+- pdf-lib for client-side PDF export
+- Vitest + Playwright + @axe-core/playwright for tests
+
+## Local development
+
+```bash
+npm install
+cp .env.example .env       # fill in DATABASE_URL + JWT_SECRET
+npm run db:push            # apply Drizzle schema to your DB
+npm run dev                # http://localhost:5173
 ```
 
-To recreate this project with the same configuration:
+## Tests
 
-```sh
-# recreate this project
-npx sv@0.15.3 create --template minimal --types ts --install npm helena-learner-profile
+```bash
+npm run test:run           # unit + component tests
+npm run test:e2e:install   # one-time Playwright browser install
+npm run test:e2e           # end-to-end + accessibility (axe)
+npm run check              # svelte-check
 ```
 
-## Developing
+## Deploy
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Connected to Vercel via the GitHub repo. `main` deploys to production. Postgres is provisioned through Vercel Storage; required env vars:
 
-```sh
-npm run dev
+- `DATABASE_URL` — Vercel Postgres (Neon) connection string
+- `JWT_SECRET` — 32+ random bytes
+- `APP_VERSION` — semver string stamped into saved runs
+- `PUBLIC_APP_URL` — public URL for PDF link-backs
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Known v1 limitations
 
-## Building
+- No email verification or password reset flow — manual recovery only.
+- Rate limiting is in-memory per lambda instance (resets on cold start). Upgrade path: Vercel KV.
+- Single-child accounts are supported; multi-child is in the data model but not wired into the dashboard yet.
 
-To create a production version of your app:
+## Disclaimer
 
-```sh
-npm run build
-```
+Reproduced in-app on every results screen:
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+> This is an informal exploration tool, not a diagnosis. It cannot identify learning disabilities. If results suggest a closer look, talk with her teacher and pediatrician.
