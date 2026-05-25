@@ -43,26 +43,20 @@ Live at **https://helena-learner-profile.vercel.app**.
 
 `main` auto-deploys to production via the Vercel ↔ GitHub integration.
 
-### Already configured
-- `JWT_SECRET` — generated, set in Vercel env (Production + Development)
-- `APP_VERSION = 0.1.0`
-- `PUBLIC_APP_URL = https://helena-learner-profile.vercel.app`
+### Configured infrastructure
+- **Hosting**: Vercel (project `helena-learner-profile` under `dhasakgbbs-projects`)
+- **Database**: Neon Postgres (free tier, IAD1 region, provisioned via `vercel install neon`)
+- **Env vars** (Production + Preview + Development): `DATABASE_URL`, `JWT_SECRET`, `APP_VERSION`, `PUBLIC_APP_URL`, plus the auto-injected `POSTGRES_*` aliases
+- **Security headers**: CSP locked to self + Google Fonts, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy disabling sensitive APIs, COOP same-origin
 
-### Manual step needed for parent dashboard (~60 seconds)
+### Re-applying schema (if you ever change Drizzle models)
 
-The kid-facing flow works fully without a database. The parent dashboard (sign-up, save run, history) needs a Postgres database — Vercel's CLI no longer provisions storage, so the one-time step is in the Vercel dashboard:
+```bash
+vercel env pull .env --environment=production
+echo y | npm run db:push -- --force
+```
 
-1. Visit **https://vercel.com/dhasakgbbs-projects/helena-learner-profile/stores**
-2. Click **Create Database → Postgres** (Neon-backed, free tier is fine).
-3. Vercel automatically injects `DATABASE_URL` (plus `POSTGRES_*` aliases) into the project's env vars and triggers a redeploy.
-4. After the redeploy completes, apply the Drizzle schema once:
-   ```bash
-   vercel env pull .env                      # pulls DATABASE_URL to local .env
-   npm run db:push                            # creates parents/children/runs tables
-   ```
-5. Sign up at `/parent/signup` to verify.
-
-Until step 1 is done, the auth endpoints return `{"error":"server_not_configured"}` with status 500 — the rest of the app still works.
+The first command writes a gitignored `.env` with the production DATABASE_URL. The second pushes any schema diff to the live Neon DB.
 
 ## Known v1 limitations
 
