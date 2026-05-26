@@ -46,9 +46,9 @@
 					{
 						id: 'states',
 						name: 'States & Capitals',
-						url: '#',
-						blurb: 'Coming soon — map exploration vs flashcards based on your preferences.',
-						ready: false,
+						url: profileLaunchUrl('https://helena-states.vercel.app/', data.profile),
+						blurb: 'Road Trip, Quest, Quiz — Road Trip for visual/kinesthetic, Quiz for read-and-write.',
+						ready: true,
 						accent: 'sky'
 					},
 					{
