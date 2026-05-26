@@ -9,8 +9,14 @@ import { DOMAINS } from '$lib/types';
 
 const OFTEN_OR_HIGHER = 3;
 const MAX_PER_ITEM = 4;
-const BAND_MEDIUM_MIN = 1 / 3; // > 33%
-const BAND_HIGH_MIN = 2 / 3; // > 67%
+// Thresholds tuned to err toward sensitivity rather than specificity. For
+// informal screeners aimed at "is a conversation with a teacher warranted?",
+// the cost of a false positive is a useful chat; the cost of a false negative
+// is a missed real signal. Cf. Pashler (2008) on the asymmetric cost of
+// under- vs over-treatment in LD identification. Default 3-item domain
+// (max raw 12): medium starts at 4/12 (33%), high starts at 7/12 (58%).
+const BAND_MEDIUM_MIN = 0.25; // ≥ 25%
+const BAND_HIGH_MIN = 0.58; // ≥ 58%
 
 /**
  * Items may carry a `weight` (0..N) when loaded from the DB-backed bank.

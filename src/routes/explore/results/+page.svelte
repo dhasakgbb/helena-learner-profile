@@ -179,13 +179,14 @@
 
 	<article class="card flex flex-col gap-5 reveal" style:--i="1">
 		<div class="flex flex-col gap-1">
-			<span class="eyebrow">How you like to learn</span>
-			<h2 class="m-0 font-display">Top preference: {topMode.replace('_', ' / ')}</h2>
+			<span class="eyebrow">What you noticed today</span>
+			<h2 class="m-0 font-display">How you liked to learn this time.</h2>
 		</div>
 		<ResultsChart scores={run.scores.preferences} />
 		<p class="m-0 text-[0.95rem] text-[var(--color-ink-soft)]">
-			Your brain can use all of these — the percentages just show what felt easiest today.
-			Mixing modes is one of the most powerful learning moves you can make.
+			This isn't a label, just a snapshot. The way you learn best can change with the
+			subject, with your mood, and as you grow. Your brain can use all of these — and
+			mixing modes is one of the most powerful learning moves you can make.
 		</p>
 	</article>
 
