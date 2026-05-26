@@ -1,59 +1,31 @@
 /**
- * Exported profile — the canonical shape Helena platform modules consume.
+ * Re-export the canonical schema from the shared package, plus producer-
+ * specific helpers (buildExportedProfile, formatProfile) that depend on
+ * RunPayload and the STRENGTHS_ITEMS item bank.
  *
- * Decoupled from the internal RunPayload on purpose:
- * - RunPayload contains raw answers (private, irrelevant to downstream modules).
- * - ExportedProfile contains only the normalized signal a module needs to set
- *   defaults: preference percentages, per-domain flags, strengths text, plan.
- *
- * Versioned. Time-boxed (60 day TTL). Modules can extend via the
- * `module_overrides` namespace without touching the shared fields.
- *
- * Copy this file (plus zod-schema.ts) into any consuming module (Spelling,
- * States, Math, etc.) to get type-safe import.
+ * Canonical schema lives in the `profile-schema` package. Do not redefine
+ * it here.
  */
-import { z } from 'zod';
 import type { RunPayload } from '$lib/types';
 import { STRENGTHS_ITEMS } from '$lib/data/strengths-items';
+import { PROFILE_TTL_DAYS, PROFILE_VERSION } from 'profile-schema';
+import type { ExportedProfile } from 'profile-schema';
 
-export const PROFILE_VERSION = 1 as const;
-export const PROFILE_TTL_DAYS = 60;
+export {
+	PROFILE_VERSION,
+	PROFILE_TTL_DAYS,
+	exportedProfileSchema,
+	type ExportedProfile,
+	type VarkChannel,
+	type FlagLevel,
+	type PlanLevel
+} from 'profile-schema';
 
-const flagLevel = z.enum(['low', 'medium', 'high']);
-const planLevel = z.enum(['strengths', 'monitor', 'schedule']);
-
-export const exportedProfileSchema = z.object({
-	version: z.literal(PROFILE_VERSION),
-	generated_at: z.string().datetime(),
-	expires_at: z.string().datetime(),
-	preferences: z.object({
-		visual: z.number().min(0).max(100),
-		auditory: z.number().min(0).max(100),
-		read_write: z.number().min(0).max(100),
-		kinesthetic: z.number().min(0).max(100)
-	}),
-	flags: z.object({
-		reading: flagLevel,
-		writing: flagLevel,
-		math: flagLevel,
-		attention: flagLevel
-	}),
-	needs_corroboration: z.object({
-		reading: z.boolean(),
-		writing: z.boolean(),
-		math: z.boolean(),
-		attention: z.boolean()
-	}),
-	strengths: z.array(z.string()),
-	plan: planLevel,
-	module_overrides: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
-	source: z.enum(['intake_quiz', 'parent_edit', 'behavioral_observation']),
-	child_label: z.string().max(40).optional()
-});
-
-export type ExportedProfile = z.infer<typeof exportedProfileSchema>;
-
-/** Convert a RunPayload + optional child label into the exportable shape. */
+/**
+ * Convert a RunPayload + optional child label into the exportable shape.
+ * Producer-specific — depends on the item bank to translate strength IDs
+ * into human-readable prompts. Stays in the producer for that reason.
+ */
 export function buildExportedProfile(
 	run: RunPayload,
 	opts: { childLabel?: string; now?: Date } = {}
