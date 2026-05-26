@@ -54,9 +54,9 @@
 					{
 						id: 'math',
 						name: 'Math practice',
-						url: '#',
-						blurb: 'Coming soon — concrete-first or symbolic, paced for attention level.',
-						ready: false,
+						url: profileLaunchUrl('https://helena-math.vercel.app/', data.profile),
+						blurb: 'Times Tables, Speed Add, Number Sort — picks the right one for how you like to work.',
+						ready: true,
 						accent: 'leaf'
 					}
 				]
