@@ -13,6 +13,7 @@
 		</a>
 		<nav class="flex gap-1 text-[0.85rem]">
 			<a class="btn btn-quiet" href="/parent/dashboard">Dashboard</a>
+			<a class="btn btn-quiet" href="/parent/telemetry">App activity</a>
 			<a class="btn btn-quiet" href="/hub">Hub</a>
 			<a class="btn btn-quiet" href="/parent/items">Items</a>
 			<a class="btn btn-quiet" href="/parent/privacy">Privacy</a>
