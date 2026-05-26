@@ -11,6 +11,7 @@
 	import Disclaimer from '$lib/components/Disclaimer.svelte';
 	import ExternalLink from '$lib/components/ExternalLink.svelte';
 	import { exportRunToPdf } from '$lib/pdf/export';
+	import { buildExportedProfile, formatProfile } from '$lib/profile/schema';
 	import { PREF_MODES, DOMAINS } from '$lib/types';
 	import type { LayoutData } from '../$types';
 
@@ -65,6 +66,45 @@
 	let children: { id: string; display_name: string; birth_year: number }[] = $state([]);
 	let pdfBusy = $state(false);
 	let pdfError = $state<string | null>(null);
+
+	// Profile JSON export (Step 1 of the platform-as-config plan)
+	const exportedProfile = $derived(buildExportedProfile(run, { childLabel: 'Helena' }));
+	const exportedProfileText = $derived(formatProfile(exportedProfile));
+	let profileExpanded = $state(false);
+	let profileCopied = $state(false);
+	let profileError = $state<string | null>(null);
+
+	async function copyProfile() {
+		profileError = null;
+		profileCopied = false;
+		try {
+			await navigator.clipboard.writeText(exportedProfileText);
+			profileCopied = true;
+			setTimeout(() => (profileCopied = false), 2400);
+		} catch (err) {
+			console.error('Clipboard write failed:', err);
+			profileError =
+				"Couldn't copy automatically. Use the Download button instead, or expand the preview and copy by hand.";
+		}
+	}
+
+	function downloadProfile() {
+		profileError = null;
+		try {
+			const blob = new Blob([exportedProfileText], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `helena-learner-profile-${new Date().toISOString().slice(0, 10)}.json`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			setTimeout(() => URL.revokeObjectURL(url), 4000);
+		} catch (err) {
+			console.error('Profile download failed:', err);
+			profileError = "Couldn't create the download. Try the Copy button instead.";
+		}
+	}
 
 	onMount(async () => {
 		try {
@@ -389,6 +429,67 @@
 		{:else if saveStatus === 'error'}
 			<p class="text-[0.92rem] text-[var(--color-rust)] m-0">
 				Couldn't save right now. You can still download the PDF.
+			</p>
+		{/if}
+	</article>
+
+	<article class="card flex flex-col gap-4 reveal" style:--i="7" data-no-print>
+		<div class="flex flex-col gap-1">
+			<span class="eyebrow eyebrow-sky">For Helena's other games</span>
+			<h2 class="m-0 font-display">Carry this profile along.</h2>
+		</div>
+		<p class="m-0 text-[var(--color-ink-soft)] text-[0.95rem]">
+			This is a small file that other Helena games can read to set sensible defaults —
+			audio-first vs. visual-first modes, session length, that kind of thing. It does not
+			lock you into any one way to learn. You can always switch modes inside each game.
+		</p>
+
+		<div class="flex flex-col sm:flex-row gap-3">
+			<button class="btn btn-primary flex-1" onclick={downloadProfile}>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+					<polyline points="7 10 12 15 17 10"></polyline>
+					<line x1="12" y1="15" x2="12" y2="3"></line>
+				</svg>
+				Download as .json
+			</button>
+			<button class="btn btn-ghost flex-1" onclick={copyProfile}>
+				{#if profileCopied}
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<polyline points="20 6 9 17 4 12"></polyline>
+					</svg>
+					Copied
+				{:else}
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<rect x="9" y="9" width="13" height="13" rx="2"></rect>
+						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+					</svg>
+					Copy to clipboard
+				{/if}
+			</button>
+		</div>
+
+		<button
+			type="button"
+			class="btn btn-quiet self-start text-[0.85rem]"
+			aria-expanded={profileExpanded}
+			onclick={() => (profileExpanded = !profileExpanded)}
+		>
+			{profileExpanded ? 'Hide' : 'Show'} preview ({Math.round(exportedProfileText.length / 100) / 10} KB)
+		</button>
+		{#if profileExpanded}
+			<pre
+				class="m-0 p-3 rounded-[var(--radius-soft)] text-[0.78rem] overflow-x-auto"
+				style:background="var(--color-paper-deep)"
+				style:border="1.5px solid var(--color-line)"
+				style:font-family="var(--font-mono)"
+				style:max-height="320px"
+				style:overflow-y="auto">{exportedProfileText}</pre>
+		{/if}
+
+		{#if profileError}
+			<p class="text-[0.92rem] text-[var(--color-rust)] m-0" role="alert" aria-live="polite">
+				{profileError}
 			</p>
 		{/if}
 	</article>
