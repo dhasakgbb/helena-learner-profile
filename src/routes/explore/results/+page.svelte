@@ -64,6 +64,7 @@
 	let childId = $state<string | null>(null);
 	let children: { id: string; display_name: string; birth_year: number }[] = $state([]);
 	let pdfBusy = $state(false);
+	let pdfError = $state<string | null>(null);
 
 	onMount(async () => {
 		try {
@@ -105,6 +106,7 @@
 
 	async function downloadPdf() {
 		pdfBusy = true;
+		pdfError = null;
 		try {
 			const blob = await exportRunToPdf(run);
 			const url = URL.createObjectURL(blob);
@@ -115,6 +117,15 @@
 			a.click();
 			document.body.removeChild(a);
 			setTimeout(() => URL.revokeObjectURL(url), 4000);
+		} catch (err) {
+			// Surface the failure instead of swallowing it silently in a finally.
+			// Without this, a thrown encoding/font error in pdf-lib produced no
+			// visible feedback and the button just snapped back to "ready".
+			console.error('PDF export failed:', err);
+			pdfError =
+				err instanceof Error
+					? `PDF couldn't be created: ${err.message}`
+					: "PDF couldn't be created. Try again, or take a screenshot of this page.";
 		} finally {
 			pdfBusy = false;
 		}
@@ -359,6 +370,11 @@
 				<a class="underline" style:color="var(--color-rust)" href="/parent/dashboard">
 					parent dashboard
 				</a> to save runs.
+			</p>
+		{/if}
+		{#if pdfError}
+			<p class="text-[0.92rem] text-[var(--color-rust)] m-0" role="alert" aria-live="polite">
+				{pdfError}
 			</p>
 		{/if}
 		{#if saveStatus === 'saved'}

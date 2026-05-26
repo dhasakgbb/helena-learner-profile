@@ -151,14 +151,13 @@ export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Pro
 	y -= 18;
 	for (const d of DOMAINS) {
 		const score = run.scores.screening[d];
-		const dot =
-			score.level === 'high'
-				? '●'
-				: score.level === 'medium'
-					? '◐'
-					: '○';
+		// ASCII-safe severity glyphs; the StandardFonts WinAnsi encoding cannot
+		// represent U+25CB/U+25D0/U+25CF (circle glyphs). Bracketed letters
+		// preserve at-a-glance scan-ability without embedding a Unicode font.
+		const tag =
+			score.level === 'high' ? '[H]' : score.level === 'medium' ? '[M]' : '[L]';
 		const note = score.needs_corroboration ? ' (needs parent corroboration)' : '';
-		page.drawText(`${dot}  ${DOMAIN_LABEL[d]} — ${score.level}${note}`, {
+		page.drawText(`${tag}  ${DOMAIN_LABEL[d]} - ${score.level}${note}`, {
 			x: margin,
 			y,
 			font: serif,
