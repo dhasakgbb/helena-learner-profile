@@ -6,6 +6,17 @@ A child-friendly web app that helps a 10-year-old (and her parent) explore:
 2. **Areas that might be tricky** — informal screening across reading, writing, math, and attention.
 3. **What to do next** — a personalized Learning Menu plus a clear decision tree about when to seek professional input.
 
+## Platform role
+
+This is the **intake + hub** for a four-app platform. The intake produces a small JSON profile that downstream apps (spelling, states, math) read to set sensible defaults. See [`docs/PLATFORM.md`](docs/PLATFORM.md) for the full cross-module architecture.
+
+Live consumers:
+- 📝 **helena-spelling** — https://helena-spelling.vercel.app
+- 🗺️ **helena-states** — https://helena-states.vercel.app
+- ➕ **helena-math** — https://helena-math.vercel.app
+
+The hub at `/hub` (parent-only) is the canonical launcher — each game tile carries the profile to the destination via URL fragment.
+
 ## What this app is not
 
 It is **not** a diagnostic tool. It cannot identify learning disabilities. Every results screen repeats this — results are a conversation starter, not a label. If a domain flags `medium` or `high`, talk to her teacher and pediatrician.
