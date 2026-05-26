@@ -49,6 +49,7 @@
 		"jose": "^6.2.3",
 		"pdf-lib": "^1.17.1",
 		"postgres": "^3.4.9",
+		"profile-schema": "github:dhasakgbb/profile-schema#v1.0.0",
 		"zod": "^4.4.3"
 	}
 }
