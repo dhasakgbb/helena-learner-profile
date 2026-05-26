@@ -1,21 +1,71 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { exportedProfileSchema, type ExportedProfile } from '$lib/profile/schema';
 	import {
+		decodeProfileFragment,
 		followRate,
 		modesBy,
 		prettyMode,
 		readTelemetry,
 		totalLaunches
 	} from '$lib/profile/telemetry';
-	import type { PageData } from './$types';
-
-	let { data }: { data: PageData } = $props();
 
 	// User-pasted JSON text. Validated on submit, not while typing — typing
 	// validation would scream at every keystroke of a 20KB paste.
 	let raw = $state('');
 	let parseError = $state<string | null>(null);
 	let profile = $state<ExportedProfile | null>(null);
+	// Set to true when the page was auto-loaded from a URL fragment so the
+	// header can say "loaded from your game" instead of acting like the
+	// parent pasted it.
+	let fromFragment = $state(false);
+
+	function tryFragmentImport() {
+		if (typeof window === 'undefined') return;
+		const hash = window.location.hash;
+		if (!hash || !hash.includes('profile=')) return;
+		const params = new URLSearchParams(hash.slice(1));
+		const token = params.get('profile');
+		if (!token) return;
+		const decoded = decodeProfileFragment(token);
+		if (!decoded) {
+			parseError =
+				"The profile link couldn't be decoded. Try the Re-export button in the game instead.";
+			return;
+		}
+		try {
+			const parsed = exportedProfileSchema.safeParse(JSON.parse(decoded));
+			if (!parsed.success) {
+				parseError =
+					"Profile link didn't validate (" +
+					(parsed.error.issues[0]?.message ?? 'unknown') +
+					').';
+				return;
+			}
+			profile = parsed.data;
+			fromFragment = true;
+			// Scrub the fragment so reloads / back-navigation don't keep
+			// re-loading the same profile and so the URL bar stays clean.
+			try {
+				history.replaceState(
+					null,
+					'',
+					window.location.pathname + window.location.search
+				);
+			} catch {
+				/* best-effort */
+			}
+		} catch {
+			parseError = "Profile link wasn't valid JSON.";
+		}
+	}
+
+	onMount(() => {
+		tryFragmentImport();
+		const onHash = () => tryFragmentImport();
+		window.addEventListener('hashchange', onHash);
+		return () => window.removeEventListener('hashchange', onHash);
+	});
 
 	// The three known consumer modules. Kept as a constant so the UI renders
 	// the same cards even when a module hasn't been touched yet (zero state
@@ -63,6 +113,7 @@
 	function reset() {
 		raw = '';
 		profile = null;
+		fromFragment = false;
 		parseError = null;
 	}
 </script>
@@ -73,12 +124,17 @@
 
 <section class="flex flex-col gap-6">
 	<header class="flex flex-col gap-1">
-		<span class="eyebrow">Signed in as {data.parentEmail}</span>
 		<h1 class="m-0 font-display">App activity</h1>
 		<p class="m-0 text-[var(--color-ink-soft)] max-w-prose">
-			Paste a re-exported profile from Spelling, States, or Math to see what your kid actually
-			played, and whether they followed the recommended mode or chose their own. Nothing is sent
-			to our server — everything happens in your browser.
+			{#if fromFragment && profile}
+				Loaded from {profile.child_label ?? 'your kid'}'s game. Below is what
+				they've played and whether they followed the recommended mode. Nothing is sent
+				to our server — everything happens in your browser.
+			{:else}
+				Paste a re-exported profile from Spelling, States, or Math to see what your
+				kid actually played, and whether they followed the recommended mode or chose
+				their own. Nothing is sent to our server — everything happens in your browser.
+			{/if}
 		</p>
 	</header>
 

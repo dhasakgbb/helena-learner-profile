@@ -109,3 +109,23 @@ export function modesBy(t: ModuleTelemetry): ModuleRow[] {
 export function prettyMode(mode: string): string {
 	return mode.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+/**
+ * Decode a #profile=… URL-safe base64 fragment back into the JSON text the
+ * consumer encoded. Returns null on any decoding failure — callers can decide
+ * whether to show a paste fallback. Mirror of the encoding used by every
+ * consumer (helena-spelling, helena-states, helena-math) and the producer's
+ * own /hub launcher.
+ *
+ * Encoding contract: btoa(encodeURIComponent(json)), then '+/' → '-_' and
+ * '=' stripped (re-padded here on decode).
+ */
+export function decodeProfileFragment(token: string): string | null {
+	try {
+		const standard = token.replace(/-/g, '+').replace(/_/g, '/');
+		const padded = standard + '==='.slice(0, (4 - (standard.length % 4)) % 4);
+		return decodeURIComponent(atob(padded));
+	} catch {
+		return null;
+	}
+}

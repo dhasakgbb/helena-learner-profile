@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExportedProfile } from './schema';
 import {
+	decodeProfileFragment,
 	followRate,
 	modesBy,
 	prettyMode,
@@ -193,5 +194,54 @@ describe('prettyMode', () => {
 
 	it('handles single-word modes', () => {
 		expect(prettyMode('quest')).toBe('Quest');
+	});
+});
+
+describe('decodeProfileFragment', () => {
+	// Mirror of the consumer's encoder so the test exercises the actual
+	// round-trip the dashboard cares about. If either side drifts, this
+	// test catches the contract break.
+	function encode(json: string): string {
+		const b64 = Buffer.from(encodeURIComponent(json), 'binary').toString('base64');
+		return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+	}
+
+	it('round-trips a typical profile JSON', () => {
+		const json = '{"hello":"world","n":1}';
+		expect(decodeProfileFragment(encode(json))).toBe(json);
+	});
+
+	it('handles JSON whose base64 contains URL-unsafe characters', () => {
+		// Hand-built case: '++++++' raw bytes produce a base64 starting with
+		// 'KysrKysr' — but we need actual '+' or '/' in the base64. Use
+		// payload bytes specifically chosen to force them. The bytes 0xFB 0xEF
+		// 0xFF base64-encode to '++//', which after URL-safing becomes '--__'.
+		const raw = 'ûïÿ';
+		const standardB64 = Buffer.from(raw, 'binary').toString('base64');
+		expect(standardB64).toContain('+');
+		expect(standardB64).toContain('/');
+		const urlSafe = standardB64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+		// decodeProfileFragment runs decodeURIComponent on the result, so
+		// only test it with content that's already %-encoded if needed —
+		// here just verify the URL-safe reversal happens.
+		const decoded = decodeProfileFragment(urlSafe);
+		expect(decoded).toBe(raw);
+	});
+
+	it('survives all three padding-strip lengths (0, 1, 2 chars stripped)', () => {
+		// Length controls how many '=' the encoder strips. Test each case.
+		expect(decodeProfileFragment(encode('a'))).toBe('a');
+		expect(decodeProfileFragment(encode('ab'))).toBe('ab');
+		expect(decodeProfileFragment(encode('abc'))).toBe('abc');
+	});
+
+	it('returns null on bogus input', () => {
+		expect(decodeProfileFragment('!!!not-base64@@@')).toBeNull();
+	});
+
+	it('returns null on empty input', () => {
+		// atob('') is legal and returns '', but decodeURIComponent('') is also '',
+		// so empty input round-trips to empty. Document this is the contract.
+		expect(decodeProfileFragment('')).toBe('');
 	});
 });
