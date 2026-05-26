@@ -18,7 +18,8 @@
 		// but encodeURIComponent first lets us survive any extended characters in
 		// strengths text or child label.
 		const encoded = btoa(encodeURIComponent(json));
-		// URL-safe variant: '+/=' → '-_~' so it round-trips through URL parsers.
+		// URL-safe variant: '+/' → '-_' and '=' is stripped (re-padded on decode)
+		// so the token round-trips through URL parsers without escaping.
 		const safe = encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 		return `${base}#profile=${safe}`;
 	}
