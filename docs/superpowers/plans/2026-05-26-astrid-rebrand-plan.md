@@ -8,61 +8,54 @@
 
 **Tech Stack:** TypeScript 5+, Svelte 5, tsup 8+, vitest 1+, Node 20+. Distribution via git tag + jsDelivr CDN. GitHub `gh` CLI for org/repo operations. Vercel CLI for project renames.
 
-**Spec:** `/Users/damian/GitHub/Helena/helena-learner-profile/docs/superpowers/specs/2026-05-26-astrid-rebrand-design.md`
+**Spec:** `/Users/damian/GitHub/Helena/learner-profile/docs/superpowers/specs/2026-05-26-astrid-rebrand-design.md`
 
 ---
 
 ## Phase A1 — Infra rename
 
-### Task 1: Create the astrid-learn GitHub org and transfer all 5 repos
+### Task 1: Rename the four `helena-*` repos in place under `dhasakgbb`
+
+**Decision:** Skip the GitHub org. Keep everything under `dhasakgbb` (the existing personal account). The rebrand goal — "Helena" out of public URLs — is satisfied by in-place repo renames; an org adds friction (web-UI creation gate) for no concrete benefit pre-revenue.
 
 **Files (mechanical infra ops, no local files):**
-- GitHub org `astrid-learn` (new)
-- 5 repos transferred from `dhasakgbb/*` to `astrid-learn/*` with possible rename
+- 4 GitHub repos renamed in place
+- `profile-schema` stays at `dhasakgbb/profile-schema` (no change)
 
-- [ ] **Step 1: Create the org**
+- [ ] **Step 1: Rename the four `helena-*` repos in place**
 
 ```bash
-gh api -X POST /admin/organizations -f login=astrid-learn -f admin=dhasakgbb -f profile_name="Astrid"
+gh api -X PATCH /repos/dhasakgbb/helena-learner-profile -f name=learner-profile
+gh api -X PATCH /repos/dhasakgbb/helena-spelling -f name=spelling
+gh api -X PATCH /repos/dhasakgbb/helena-states -f name=states
+gh api -X PATCH /repos/dhasakgbb/helena-math -f name=math
 ```
 
-If the API errors because creating orgs via the personal-access token requires a web flow (most personal accounts cannot create orgs via API), STOP and surface BLOCKED to the controller with the message: "Org creation needs web UI. Open https://github.com/organizations/new and create `astrid-learn` (Free plan, you = owner). Then re-dispatch this task."
+GitHub auto-installs 301 redirects from each old URL. Existing clones, jsDelivr URLs that referenced the old name (none did — only `profile-schema` is on jsDelivr, and it didn't change), and Vercel webhooks continue working via the redirect during the transition.
 
-Verify after creation:
-```bash
-gh api orgs/astrid-learn --jq '.login'
-```
-Expected: `astrid-learn`.
-
-- [ ] **Step 2: Transfer the 5 repos**
+- [ ] **Step 2: Verify each rename succeeded**
 
 ```bash
-for repo in profile-schema helena-learner-profile helena-spelling helena-states helena-math; do
-  gh api -X POST /repos/dhasakgbb/$repo/transfer -f new_owner=astrid-learn
+for new in learner-profile spelling states math; do
+  echo -n "$new: "
+  gh api repos/dhasakgbb/$new --jq '.name' 2>&1 | head -1
 done
 ```
 
-Each transfer makes GitHub install a 301 redirect at the old URL automatically.
+Expected: each line prints the new name back. If any rename failed (e.g., name taken under your account), surface BLOCKED with the offending name.
 
-- [ ] **Step 3: Rename the four `helena-*` repos**
-
-```bash
-gh api -X PATCH /repos/astrid-learn/helena-learner-profile -f name=learner-profile
-gh api -X PATCH /repos/astrid-learn/helena-spelling -f name=spelling
-gh api -X PATCH /repos/astrid-learn/helena-states -f name=states
-gh api -X PATCH /repos/astrid-learn/helena-math -f name=math
-```
-
-(`profile-schema` was never `helena-*`, so it stays as `profile-schema`.)
-
-- [ ] **Step 4: Verify on GitHub**
+- [ ] **Step 3: Verify the old URLs redirect**
 
 ```bash
-gh repo list astrid-learn --json name --jq '.[].name'
+for old in helena-learner-profile helena-spelling helena-states helena-math; do
+  code=$(curl -sI -o /dev/null -w "%{http_code}" -m 5 "https://github.com/dhasakgbb/$old")
+  echo "$old: HTTP $code"
+done
 ```
-Expected: `profile-schema`, `learner-profile`, `spelling`, `states`, `math`.
 
-- [ ] **Step 5: Commit nothing — this task is GitHub-side only.**
+Expected: each prints `HTTP 301` (redirect to new location).
+
+- [ ] **Step 4: Commit nothing — this task is GitHub-side only.**
 
 No local commits. Move to Task 2.
 
@@ -76,11 +69,11 @@ No local commits. Move to Task 2.
 - [ ] **Step 1: For each repo, set the new origin URL**
 
 ```bash
-git -C /Users/damian/GitHub/Helena/profile-schema remote set-url origin https://github.com/astrid-learn/profile-schema.git
-git -C /Users/damian/GitHub/Helena/helena-learner-profile remote set-url origin https://github.com/astrid-learn/learner-profile.git
-git -C /Users/damian/GitHub/Helena/Spelling remote set-url origin https://github.com/astrid-learn/spelling.git
-git -C /Users/damian/GitHub/Helena/helena-states remote set-url origin https://github.com/astrid-learn/states.git
-git -C /Users/damian/GitHub/Helena/helena-math remote set-url origin https://github.com/astrid-learn/math.git
+git -C /Users/damian/GitHub/Helena/profile-schema remote set-url origin https://github.com/dhasakgbb/profile-schema.git
+git -C /Users/damian/GitHub/Helena/learner-profile remote set-url origin https://github.com/dhasakgbb/learner-profile.git
+git -C /Users/damian/GitHub/Helena/spelling remote set-url origin https://github.com/dhasakgbb/spelling.git
+git -C /Users/damian/GitHub/Helena/states remote set-url origin https://github.com/dhasakgbb/states.git
+git -C /Users/damian/GitHub/Helena/math remote set-url origin https://github.com/dhasakgbb/math.git
 ```
 
 Note: working-tree directory names (`helena-learner-profile/`, `Spelling/`, etc.) are NOT renamed in this task. Renaming local directories breaks editor projects and shell history; the implementer can rename later if desired. The git remote is what consumers (CI, Vercel) read.
@@ -94,7 +87,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Each entry's URL should start with `https://github.com/astrid-learn/`.
+Each entry's URL should start with `https://github.com/dhasakgbb/`.
 
 - [ ] **Step 3: Smoke-test a fetch from each new remote**
 
@@ -105,7 +98,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Expected: no errors. Each prints "From https://github.com/astrid-learn/..." or silent success.
+Expected: no errors. Each prints "From https://github.com/dhasakgbb/..." or silent success.
 
 - [ ] **Step 4: No commit — this is local-config only.**
 
@@ -114,23 +107,23 @@ Expected: no errors. Each prints "From https://github.com/astrid-learn/..." or s
 ### Task 3: Update package.json git deps + jsDelivr URLs across the 4 consumers
 
 **Files:**
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/package.json`
-- Modify: `/Users/damian/GitHub/Helena/Spelling/package.json`
-- Modify: `/Users/damian/GitHub/Helena/helena-states/index.html`
-- Modify: `/Users/damian/GitHub/Helena/helena-math/index.html`
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/package.json`
+- Modify: `/Users/damian/GitHub/Helena/spelling/package.json`
+- Modify: `/Users/damian/GitHub/Helena/states/index.html`
+- Modify: `/Users/damian/GitHub/Helena/math/index.html`
 
 - [ ] **Step 1: Update helena-learner-profile dep**
 
-Open `/Users/damian/GitHub/Helena/helena-learner-profile/package.json`. Find the `profile-schema` dep entry (look for `dhasakgbb/profile-schema` or `github:dhasakgbb`) and change it to:
+Open `/Users/damian/GitHub/Helena/learner-profile/package.json`. Find the `profile-schema` dep entry (look for `dhasakgbb/profile-schema` or `github:dhasakgbb`) and change it to:
 
 ```json
-"profile-schema": "github:astrid-learn/profile-schema#v1.0.0"
+"profile-schema": "github:dhasakgbb/profile-schema#v1.0.0"
 ```
 
 Then:
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile
+cd /Users/damian/GitHub/Helena/learner-profile
 npm install
 ```
 
@@ -138,22 +131,22 @@ This refetches the dep from the new URL into node_modules.
 
 - [ ] **Step 2: Update Spelling dep**
 
-Same change in `/Users/damian/GitHub/Helena/Spelling/package.json`:
+Same change in `/Users/damian/GitHub/Helena/spelling/package.json`:
 
 ```json
-"profile-schema": "github:astrid-learn/profile-schema#v1.0.0"
+"profile-schema": "github:dhasakgbb/profile-schema#v1.0.0"
 ```
 
 Then:
 
 ```bash
-cd /Users/damian/GitHub/Helena/Spelling
+cd /Users/damian/GitHub/Helena/spelling
 npm install
 ```
 
 - [ ] **Step 3: Update states CDN URL**
 
-Open `/Users/damian/GitHub/Helena/helena-states/index.html`. Find the line:
+Open `/Users/damian/GitHub/Helena/states/index.html`. Find the line:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
@@ -162,18 +155,18 @@ Open `/Users/damian/GitHub/Helena/helena-states/index.html`. Find the line:
 Replace `dhasakgbb` with `astrid-learn`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 - [ ] **Step 4: Update math CDN URL**
 
-Same change in `/Users/damian/GitHub/Helena/helena-math/index.html`.
+Same change in `/Users/damian/GitHub/Helena/math/index.html`.
 
 - [ ] **Step 5: Verify each consumer still resolves the package**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile && node -e "console.log(require.resolve('profile-schema'))"
-cd /Users/damian/GitHub/Helena/Spelling && node -e "console.log(require.resolve('profile-schema'))"
+cd /Users/damian/GitHub/Helena/learner-profile && node -e "console.log(require.resolve('profile-schema'))"
+cd /Users/damian/GitHub/Helena/spelling && node -e "console.log(require.resolve('profile-schema'))"
 ```
 
 Both should print a path under their own `node_modules/profile-schema/`.
@@ -181,7 +174,7 @@ Both should print a path under their own `node_modules/profile-schema/`.
 For the vanilla apps, smoke-test the CDN:
 
 ```bash
-curl -sI https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js | head -1
+curl -sI https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js | head -1
 ```
 
 Expected: `HTTP/2 200`.
@@ -189,25 +182,25 @@ Expected: `HTTP/2 200`.
 - [ ] **Step 6: Commit the 4 changes**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile
+cd /Users/damian/GitHub/Helena/learner-profile
 git add package.json package-lock.json
 git commit -m "chore(deps): repoint profile-schema dep at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
-cd /Users/damian/GitHub/Helena/Spelling
+cd /Users/damian/GitHub/Helena/spelling
 git add package.json package-lock.json
 git commit -m "chore(deps): repoint profile-schema dep at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
-cd /Users/damian/GitHub/Helena/helena-states
+cd /Users/damian/GitHub/Helena/states
 git add index.html
 git commit -m "chore: repoint profile-schema CDN at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
-cd /Users/damian/GitHub/Helena/helena-math
+cd /Users/damian/GitHub/Helena/math
 git add index.html
 git commit -m "chore: repoint profile-schema CDN at astrid-learn org
 
@@ -298,31 +291,31 @@ Using `/tmp/astrid-url-inventory.txt` from Task 4 Step 1 as the checklist, repla
 
 Files typically affected (verify against the inventory):
 
-- `/Users/damian/GitHub/Helena/Spelling/src/screens/Hub.svelte` — Hub back-link
-- `/Users/damian/GitHub/Helena/Spelling/src/components/ProfileBanner.svelte` — "Take the quiz" + activity URL
-- `/Users/damian/GitHub/Helena/helena-states/index.html` — Hub back-link
-- `/Users/damian/GitHub/Helena/helena-states/app.js` — `buildActivityUrl`
-- `/Users/damian/GitHub/Helena/helena-states/profile.js` — onboarding "Take the quiz" anchor
-- `/Users/damian/GitHub/Helena/helena-math/index.html` — Hub back-link
-- `/Users/damian/GitHub/Helena/helena-math/app.js` — `buildActivityUrl`
-- `/Users/damian/GitHub/Helena/helena-math/profile.js` — onboarding "Take the quiz" anchor
+- `/Users/damian/GitHub/Helena/spelling/src/screens/Hub.svelte` — Hub back-link
+- `/Users/damian/GitHub/Helena/spelling/src/components/ProfileBanner.svelte` — "Take the quiz" + activity URL
+- `/Users/damian/GitHub/Helena/states/index.html` — Hub back-link
+- `/Users/damian/GitHub/Helena/states/app.js` — `buildActivityUrl`
+- `/Users/damian/GitHub/Helena/states/profile.js` — onboarding "Take the quiz" anchor
+- `/Users/damian/GitHub/Helena/math/index.html` — Hub back-link
+- `/Users/damian/GitHub/Helena/math/app.js` — `buildActivityUrl`
+- `/Users/damian/GitHub/Helena/math/profile.js` — onboarding "Take the quiz" anchor
 
 - [ ] **Step 6: Commit per-repo**
 
 ```bash
-cd /Users/damian/GitHub/Helena/Spelling
+cd /Users/damian/GitHub/Helena/spelling
 git add src/
 git commit -m "chore: repoint cross-app URLs at new Vercel project names
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
-cd /Users/damian/GitHub/Helena/helena-states
+cd /Users/damian/GitHub/Helena/states
 git add index.html app.js profile.js
 git commit -m "chore: repoint cross-app URLs at new Vercel project names
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
-cd /Users/damian/GitHub/Helena/helena-math
+cd /Users/damian/GitHub/Helena/math
 git add index.html app.js profile.js
 git commit -m "chore: repoint cross-app URLs at new Vercel project names
 
@@ -401,11 +394,11 @@ Expected: minimal hits (only the explicitly-allowed patterns).
 
 **Files:**
 - Modify: `/Users/damian/GitHub/Helena/profile-schema/README.md`
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/README.md`
-- Modify: `/Users/damian/GitHub/Helena/Spelling/README.md`
-- Modify: `/Users/damian/GitHub/Helena/helena-states/README.md`
-- Modify: `/Users/damian/GitHub/Helena/helena-math/README.md`
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/docs/PLATFORM.md`
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/README.md`
+- Modify: `/Users/damian/GitHub/Helena/spelling/README.md`
+- Modify: `/Users/damian/GitHub/Helena/states/README.md`
+- Modify: `/Users/damian/GitHub/Helena/math/README.md`
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/docs/PLATFORM.md`
 
 - [ ] **Step 1: Edit each README title and first paragraph**
 
@@ -418,11 +411,11 @@ Expected: minimal hits (only the explicitly-allowed patterns).
 | `helena-math/README.md` | Title → "Astrid's Number Garden" |
 
 Each README also adds a one-line top-of-file note:
-> Part of the **Astrid** platform — see [PLATFORM.md](https://github.com/astrid-learn/learner-profile/blob/main/docs/PLATFORM.md).
+> Part of the **Astrid** platform — see [PLATFORM.md](https://github.com/dhasakgbb/learner-profile/blob/main/docs/PLATFORM.md).
 
 - [ ] **Step 2: Update PLATFORM.md introduction**
 
-Open `/Users/damian/GitHub/Helena/helena-learner-profile/docs/PLATFORM.md`. Add a new section right after the introduction:
+Open `/Users/damian/GitHub/Helena/learner-profile/docs/PLATFORM.md`. Add a new section right after the introduction:
 
 ```markdown
 ## Brand
@@ -473,7 +466,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Each push goes to the new `github.com/astrid-learn/<name>.git` remote (set in Task 2).
+Each push goes to the new `github.com/dhasakgbb/<name>.git` remote (set in Task 2).
 
 - [ ] **Step 2: Watch Vercel redeploy**
 
@@ -508,10 +501,10 @@ Open `https://learner-profile.vercel.app/hub` in a browser. Click each "Open Spe
 - [ ] **Step 5: Run all test suites once more**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile && npx vitest run 2>&1 | tail -5
-cd /Users/damian/GitHub/Helena/Spelling && npx vitest run --exclude '**/definitions.test.ts' --exclude '**/masking-issues.test.ts' 2>&1 | tail -5
-node -c /Users/damian/GitHub/Helena/helena-states/profile.js && node -c /Users/damian/GitHub/Helena/helena-states/app.js
-node -c /Users/damian/GitHub/Helena/helena-math/profile.js && node -c /Users/damian/GitHub/Helena/helena-math/app.js
+cd /Users/damian/GitHub/Helena/learner-profile && npx vitest run 2>&1 | tail -5
+cd /Users/damian/GitHub/Helena/spelling && npx vitest run --exclude '**/definitions.test.ts' --exclude '**/masking-issues.test.ts' 2>&1 | tail -5
+node -c /Users/damian/GitHub/Helena/states/profile.js && node -c /Users/damian/GitHub/Helena/states/app.js
+node -c /Users/damian/GitHub/Helena/math/profile.js && node -c /Users/damian/GitHub/Helena/math/app.js
 ```
 
 All clean. A1 is complete.
@@ -677,7 +670,7 @@ Astrid the cyan-glow robot mascot for the Astrid learning platform.
 ## Install (TypeScript / ESM)
 
 \`\`\`bash
-npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
+npm install "astrid-mascot@github:dhasakgbb/astrid-mascot#v1.0.0"
 \`\`\`
 
 \`\`\`ts
@@ -687,7 +680,7 @@ import { AstridMascot, svgFor, POSES, tokens } from 'astrid-mascot';
 ## Install (Vanilla JS via CDN)
 
 \`\`\`html
-<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js"></script>
 <script>
   const node = document.getElementById('hero');
   window.AstridMascot.renderInto(node, { pose: 'waving', size: 140 });
@@ -725,7 +718,7 @@ git commit -m "chore: scaffold astrid-mascot package"
 
 ### Task 10: Port the 4 existing poses from MascotSVG.svelte
 
-The 4 existing poses (idle, happy, sad, wow) live in `/Users/damian/GitHub/Helena/Spelling/src/components/MascotSVG.svelte` as conditional SVG blocks inside one component. We extract them into 4 separate TypeScript files, each exporting a `string` containing standalone SVG markup.
+The 4 existing poses (idle, happy, sad, wow) live in `/Users/damian/GitHub/Helena/spelling/src/components/MascotSVG.svelte` as conditional SVG blocks inside one component. We extract them into 4 separate TypeScript files, each exporting a `string` containing standalone SVG markup.
 
 **Files:**
 - Create: `/Users/damian/GitHub/Helena/astrid-mascot/src/poses/idle.ts`
@@ -738,7 +731,7 @@ The 4 existing poses (idle, happy, sad, wow) live in `/Users/damian/GitHub/Helen
 - [ ] **Step 1: Read the source mascot**
 
 ```bash
-cat /Users/damian/GitHub/Helena/Spelling/src/components/MascotSVG.svelte
+cat /Users/damian/GitHub/Helena/spelling/src/components/MascotSVG.svelte
 ```
 
 Note the four `mood-` CSS classes and how the conditional SVG content varies per mood. Identify the shared body (gradient defs, robot face frame) and the per-mood deltas (eye shape, mouth/screen content).
@@ -1519,7 +1512,7 @@ git tag -a v1.0.0 -m "Release 1.0.0 — Astrid mascot for the Astrid platform"
 - [ ] **Step 6: Create the GitHub repo and push**
 
 ```bash
-gh repo create astrid-learn/astrid-mascot --public --source=. --remote=origin --push --description "Astrid the cyan-glow robot mascot — SVG poses, Svelte component, IIFE bundle for the Astrid learning platform"
+gh repo create dhasakgbb/astrid-mascot --public --source=. --remote=origin --push --description "Astrid the cyan-glow robot mascot — SVG poses, Svelte component, IIFE bundle for the Astrid learning platform"
 git push origin v1.0.0
 ```
 
@@ -1528,7 +1521,7 @@ If `astrid-learn` org doesn't exist yet, this will fail — go back to Task 1.
 - [ ] **Step 7: Verify on GitHub**
 
 ```bash
-gh api repos/astrid-learn/astrid-mascot/tags --jq '.[].name' | head -3
+gh api repos/dhasakgbb/astrid-mascot/tags --jq '.[].name' | head -3
 ```
 
 Expected: `v1.0.0` in output.
@@ -1536,7 +1529,7 @@ Expected: `v1.0.0` in output.
 - [ ] **Step 8: Wait for jsDelivr to fetch + smoke-test**
 
 ```bash
-until curl -fsSI -m 5 "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" >/dev/null 2>&1; do
+until curl -fsSI -m 5 "https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js" >/dev/null 2>&1; do
   echo "waiting for jsDelivr to fetch the tag..."
   sleep 5
 done
@@ -1546,7 +1539,7 @@ echo "jsDelivr is serving."
 - [ ] **Step 9: String-check the jsDelivr-served bundle**
 
 ```bash
-curl -fsS "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" -o /tmp/astrid-iife.js
+curl -fsS "https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js" -o /tmp/astrid-iife.js
 wc -c /tmp/astrid-iife.js
 grep -c "window.AstridMascot" /tmp/astrid-iife.js
 grep -c "POSES" /tmp/astrid-iife.js
@@ -1561,17 +1554,17 @@ All positive. A2 complete.
 ### Task 15: Migrate Spelling — replace local mascot with package
 
 **Files:**
-- Modify: `/Users/damian/GitHub/Helena/Spelling/package.json`
-- Delete: `/Users/damian/GitHub/Helena/Spelling/src/components/Mascot.svelte`
-- Delete: `/Users/damian/GitHub/Helena/Spelling/src/components/MascotSVG.svelte`
-- Modify: `/Users/damian/GitHub/Helena/Spelling/src/screens/Hub.svelte`
+- Modify: `/Users/damian/GitHub/Helena/spelling/package.json`
+- Delete: `/Users/damian/GitHub/Helena/spelling/src/components/Mascot.svelte`
+- Delete: `/Users/damian/GitHub/Helena/spelling/src/components/MascotSVG.svelte`
+- Modify: `/Users/damian/GitHub/Helena/spelling/src/screens/Hub.svelte`
 - Modify: any other Spelling file that imported Mascot/MascotSVG
 
 - [ ] **Step 1: Install astrid-mascot**
 
 ```bash
-cd /Users/damian/GitHub/Helena/Spelling
-npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
+cd /Users/damian/GitHub/Helena/spelling
+npm install "astrid-mascot@github:dhasakgbb/astrid-mascot#v1.0.0"
 ```
 
 Verify:
@@ -1583,7 +1576,7 @@ Expected: a path under `Spelling/node_modules/astrid-mascot/`.
 - [ ] **Step 2: Inventory callsites**
 
 ```bash
-cd /Users/damian/GitHub/Helena/Spelling
+cd /Users/damian/GitHub/Helena/spelling
 grep -rn "from.*Mascot\(SVG\)\?'" src/ 2>/dev/null
 ```
 
@@ -1613,7 +1606,7 @@ Map the existing `mood` prop to the package's `pose` prop. Mood names map direct
 - [ ] **Step 4: Delete the local mascot files**
 
 ```bash
-cd /Users/damian/GitHub/Helena/Spelling
+cd /Users/damian/GitHub/Helena/spelling
 git rm src/components/Mascot.svelte src/components/MascotSVG.svelte
 ```
 
@@ -1657,19 +1650,19 @@ git push origin HEAD
 ### Task 16: Integrate Astrid into helena-learner-profile
 
 **Files:**
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/package.json`
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/src/routes/+page.svelte` (welcome hero)
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/src/routes/hub/+page.svelte` (hub launcher)
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/src/routes/explore/results/+page.svelte` (results)
-- Modify: `/Users/damian/GitHub/Helena/helena-learner-profile/src/routes/parent/dashboard/+page.svelte` (header)
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/package.json`
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/src/routes/+page.svelte` (welcome hero)
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/src/routes/hub/+page.svelte` (hub launcher)
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/src/routes/explore/results/+page.svelte` (results)
+- Modify: `/Users/damian/GitHub/Helena/learner-profile/src/routes/parent/dashboard/+page.svelte` (header)
 - Modify: the explore-quiz page (thinking pose during quiz)
 - Modify: display copy throughout
 
 - [ ] **Step 1: Install astrid-mascot**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile
-npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
+cd /Users/damian/GitHub/Helena/learner-profile
+npm install "astrid-mascot@github:dhasakgbb/astrid-mascot#v1.0.0"
 ```
 
 - [ ] **Step 2: Add Astrid to the welcome page hero (waving pose)**
@@ -1776,9 +1769,9 @@ git push origin HEAD
 ### Task 17: Integrate Astrid into helena-states (CDN-based)
 
 **Files:**
-- Modify: `/Users/damian/GitHub/Helena/helena-states/index.html`
-- Modify: `/Users/damian/GitHub/Helena/helena-states/index.css` (mount-point CSS)
-- Modify: `/Users/damian/GitHub/Helena/helena-states/app.js`
+- Modify: `/Users/damian/GitHub/Helena/states/index.html`
+- Modify: `/Users/damian/GitHub/Helena/states/index.css` (mount-point CSS)
+- Modify: `/Users/damian/GitHub/Helena/states/app.js`
 
 - [ ] **Step 1: Add the CDN script to index.html**
 
@@ -1787,7 +1780,7 @@ Find the existing profile-schema CDN line. Add a sibling line for astrid-mascot 
 ```html
 <!-- Astrid mascot — exposes window.AstridMascot. Load before app.js so
      app.js can call window.AstridMascot.renderInto(...) during init. -->
-<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 - [ ] **Step 2: Add a mascot mount point in the home view**
@@ -1842,7 +1835,7 @@ Find the function that transitions to the end view (search for `endView.style.di
 - [ ] **Step 4: Copy sweep**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-states
+cd /Users/damian/GitHub/Helena/states
 git grep -in "helena\|capitals quest" -- ':!*.md'
 ```
 
@@ -1855,7 +1848,7 @@ Update display copy: "Capitals Quest" → "Astrid's Map Room" in titles, meta de
 - [ ] **Step 6: Verify CDN tag is in the served HTML**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-states
+cd /Users/damian/GitHub/Helena/states
 python3 -m http.server 8080 &
 SERVER_PID=$!
 sleep 2
@@ -1869,8 +1862,8 @@ Expected: 2 (both CDN scripts present).
 - [ ] **Step 7: Syntax-check**
 
 ```bash
-node -c /Users/damian/GitHub/Helena/helena-states/app.js
-node -c /Users/damian/GitHub/Helena/helena-states/profile.js
+node -c /Users/damian/GitHub/Helena/states/app.js
+node -c /Users/damian/GitHub/Helena/states/profile.js
 ```
 
 - [ ] **Step 8: Commit + push**
@@ -1894,14 +1887,14 @@ git push origin HEAD
 Same pattern as helena-states.
 
 **Files:**
-- Modify: `/Users/damian/GitHub/Helena/helena-math/index.html`
-- Modify: `/Users/damian/GitHub/Helena/helena-math/styles.css` (mount-point CSS)
-- Modify: `/Users/damian/GitHub/Helena/helena-math/app.js`
+- Modify: `/Users/damian/GitHub/Helena/math/index.html`
+- Modify: `/Users/damian/GitHub/Helena/math/styles.css` (mount-point CSS)
+- Modify: `/Users/damian/GitHub/Helena/math/app.js`
 
 - [ ] **Step 1: Add the CDN script to index.html**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 Place before `app.js`.
@@ -1958,7 +1951,7 @@ Wire `mountAstridEnd()` into whatever function transitions to the end view.
 - [ ] **Step 4: Copy sweep**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-math
+cd /Users/damian/GitHub/Helena/math
 git grep -in "helena" -- ':!*.md'
 ```
 
@@ -1971,7 +1964,7 @@ Same pattern as states.
 - [ ] **Step 6: Static check + syntax check**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-math
+cd /Users/damian/GitHub/Helena/math
 python3 -m http.server 8081 &
 SERVER_PID=$!
 sleep 2
@@ -1979,8 +1972,8 @@ curl -sf http://localhost:8081/ -o /tmp/math-index.html
 grep -c "astrid-mascot\|profile-schema" /tmp/math-index.html
 kill $SERVER_PID 2>/dev/null || true
 
-node -c /Users/damian/GitHub/Helena/helena-math/app.js
-node -c /Users/damian/GitHub/Helena/helena-math/profile.js
+node -c /Users/damian/GitHub/Helena/math/app.js
+node -c /Users/damian/GitHub/Helena/math/profile.js
 ```
 
 - [ ] **Step 7: Commit + push**
@@ -2042,8 +2035,8 @@ Each: 200.
 
 ```bash
 for url in \
-  "https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js" \
-  "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js"; do
+  "https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js" \
+  "https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js"; do
   echo "$url -> $(curl -sI -o /dev/null -w '%{http_code}' -m 8 "$url")"
 done
 ```
@@ -2053,11 +2046,11 @@ Each: 200.
 - [ ] **Step 5: All test suites green**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile && npx vitest run 2>&1 | tail -5
-cd /Users/damian/GitHub/Helena/Spelling && npx vitest run --exclude '**/definitions.test.ts' --exclude '**/masking-issues.test.ts' 2>&1 | tail -5
+cd /Users/damian/GitHub/Helena/learner-profile && npx vitest run 2>&1 | tail -5
+cd /Users/damian/GitHub/Helena/spelling && npx vitest run --exclude '**/definitions.test.ts' --exclude '**/masking-issues.test.ts' 2>&1 | tail -5
 cd /Users/damian/GitHub/Helena/astrid-mascot && npx vitest run 2>&1 | tail -5
-node -c /Users/damian/GitHub/Helena/helena-states/profile.js && node -c /Users/damian/GitHub/Helena/helena-states/app.js
-node -c /Users/damian/GitHub/Helena/helena-math/profile.js && node -c /Users/damian/GitHub/Helena/helena-math/app.js
+node -c /Users/damian/GitHub/Helena/states/profile.js && node -c /Users/damian/GitHub/Helena/states/app.js
+node -c /Users/damian/GitHub/Helena/math/profile.js && node -c /Users/damian/GitHub/Helena/math/app.js
 ```
 
 - [ ] **Step 6: Browser spot check**
@@ -2071,7 +2064,7 @@ window.AstridMascot.POSES.length // 8
 
 - [ ] **Step 7: PLATFORM.md sub-project A completion note**
 
-Add at the end of `/Users/damian/GitHub/Helena/helena-learner-profile/docs/PLATFORM.md`:
+Add at the end of `/Users/damian/GitHub/Helena/learner-profile/docs/PLATFORM.md`:
 
 ```markdown
 ---
@@ -2079,8 +2072,8 @@ Add at the end of `/Users/damian/GitHub/Helena/helena-learner-profile/docs/PLATF
 **Sub-project A status:** complete, 2026-05-26.
 
 The platform now ships under the Astrid brand. The mascot lives in
-`astrid-mascot` (git tag v1.0.0 at https://github.com/astrid-learn/astrid-mascot).
-All 5 repos are at `github.com/astrid-learn/*`. Domain registration is
+`astrid-mascot` (git tag v1.0.0 at https://github.com/dhasakgbb/astrid-mascot).
+All 5 repos are at `github.com/dhasakgbb/*`. Domain registration is
 deferred — the rebrand stands on the GitHub org and Vercel project
 names alone until commercial-readiness sub-projects (B, C, F) decide
 on a hosting domain.
@@ -2089,7 +2082,7 @@ on a hosting domain.
 - [ ] **Step 8: Commit + push**
 
 ```bash
-cd /Users/damian/GitHub/Helena/helena-learner-profile
+cd /Users/damian/GitHub/Helena/learner-profile
 git add docs/PLATFORM.md
 git commit -m "docs(platform): mark sub-project A complete
 

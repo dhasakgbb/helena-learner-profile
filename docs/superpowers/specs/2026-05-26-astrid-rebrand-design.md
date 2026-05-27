@@ -24,7 +24,7 @@ no drift). Sub-project A now rebrands the surface so everything below
 | Brand name | **Astrid** |
 | Mascot | existing cyan-glow robot (`Spelling/src/components/MascotSVG.svelte`), used identically across all 4 apps |
 | Domain | **deferred** (intent: `astrid.kids` — verified available — but not registered in this sub-project) |
-| GitHub org | `astrid-learn` |
+| GitHub owner | `dhasakgbb` (existing personal account; no org) |
 | Distribution | git tag + jsDelivr-from-gh (mirrors sub-project D pattern; no npm publish) |
 | Cross-app metaphor | "Astrid takes you to different places — Spell Lab, Map Room, Number Garden, the Assessment. She doesn't change; the rooms around her do." |
 
@@ -82,11 +82,11 @@ Total: ~7.5 days.
 
 | Today | New |
 |-------|-----|
-| `dhasakgbb/profile-schema` | `astrid-learn/profile-schema` (no rename, just transfer) |
-| `dhasakgbb/helena-learner-profile` | `astrid-learn/learner-profile` |
-| `dhasakgbb/helena-spelling` (working tree `Spelling/`) | `astrid-learn/spelling` |
-| `dhasakgbb/helena-states` | `astrid-learn/states` |
-| `dhasakgbb/helena-math` | `astrid-learn/math` |
+| `dhasakgbb/profile-schema` | `dhasakgbb/profile-schema` (no rename, just transfer) |
+| `dhasakgbb/helena-learner-profile` | `dhasakgbb/learner-profile` |
+| `dhasakgbb/helena-spelling` (working tree `Spelling/`) | `dhasakgbb/spelling` |
+| `dhasakgbb/helena-states` | `dhasakgbb/states` |
+| `dhasakgbb/helena-math` | `dhasakgbb/math` |
 
 ### Order of operations
 
@@ -112,7 +112,7 @@ Total: ~7.5 days.
 - `gh repo list astrid-learn` shows all 5 repos.
 - `git -C <repo> remote -v` for each working tree points at the new origin.
 - Old GitHub URLs redirect (HTTP 301) to the new ones (auto by GitHub).
-- jsDelivr serves `https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js` with HTTP 200.
+- jsDelivr serves `https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js` with HTTP 200.
 - All 4 consumer test suites pass after the rename (no broken imports).
 - All 4 live deploys return HTTP 200 on their new Vercel URLs.
 - `git grep -in "helena" -- ':!docs/' ':!*.md'` across all 5 repos returns zero hits.
@@ -138,7 +138,7 @@ Total: ~7.5 days.
 ### Package shape
 
 ```
-astrid-mascot/                            (new repo: astrid-learn/astrid-mascot)
+astrid-mascot/                            (new repo: dhasakgbb/astrid-mascot)
 ├── src/
 │   ├── poses/
 │   │   ├── idle.ts              ← existing (ported from MascotSVG.svelte 'idle' mood)
@@ -182,7 +182,7 @@ elements change per pose. No new illustrator commission required.
 ### Public API
 
 ```ts
-// ESM (TS apps consume via `github:astrid-learn/astrid-mascot#v1.0.0` in package.json)
+// ESM (TS apps consume via `github:dhasakgbb/astrid-mascot#v1.0.0` in package.json)
 import { AstridMascot } from 'astrid-mascot';   // Svelte component
 import { svgFor, POSES, tokens } from 'astrid-mascot'; // raw helpers
 
@@ -196,8 +196,8 @@ window.AstridMascot = {
 
 Distribution and naming mirror sub-project D exactly: package.json
 `"name": "astrid-mascot"` (no npm scope), consumer dep specs as
-`"astrid-mascot": "github:astrid-learn/astrid-mascot#v1.0.0"`, IIFE
-served from `cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/...`.
+`"astrid-mascot": "github:dhasakgbb/astrid-mascot#v1.0.0"`, IIFE
+served from `cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/...`.
 No npm publish; the package is provisional under this name and will
 be re-evaluated alongside `profile-schema` if/when we move to a
 registered scope.
@@ -205,13 +205,13 @@ registered scope.
 ### Distribution
 
 - Build with `tsup` (same config shape as profile-schema)
-- Publish via git tag `v1.0.0` on `github.com/astrid-learn/astrid-mascot`
-- TS consumers depend via `package.json`: `"astrid-mascot": "github:astrid-learn/astrid-mascot#v1.0.0"`
-- Vanilla consumers load via `<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js">`
+- Publish via git tag `v1.0.0` on `github.com/dhasakgbb/astrid-mascot`
+- TS consumers depend via `package.json`: `"astrid-mascot": "github:dhasakgbb/astrid-mascot#v1.0.0"`
+- Vanilla consumers load via `<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/astrid-mascot@v1.0.0/dist/index.iife.js">`
 
 ### Acceptance criteria
 
-- `astrid-mascot` (in `github.com/astrid-learn/astrid-mascot`) published as git tag `v1.0.0` with `dist/` populated
+- `astrid-mascot` (in `github.com/dhasakgbb/astrid-mascot`) published as git tag `v1.0.0` with `dist/` populated
 - All 8 poses available; each produces parseable, well-formed SVG
 - Three consumption paths verified (Svelte import / ESM import / IIFE script)
 - jsDelivr serves the IIFE at the documented URL
@@ -231,17 +231,17 @@ registered scope.
 
 ### Per-app integration
 
-#### `astrid-learn/spelling` (was Spelling/)
+#### `dhasakgbb/spelling` (was Spelling/)
 
 - Delete `src/components/Mascot.svelte` and `src/components/MascotSVG.svelte`
-- Replace with `import { AstridMascot } from 'astrid-mascot'` after adding the dep `"astrid-mascot": "github:astrid-learn/astrid-mascot#v1.0.0"`
+- Replace with `import { AstridMascot } from 'astrid-mascot'` after adding the dep `"astrid-mascot": "github:dhasakgbb/astrid-mascot#v1.0.0"`
 - The `SPELL_MASTER_ASTRID` placeholder in `Hub.svelte` becomes the proper
   "Astrid" label — possibly with a friendlier display name like "Astrid"
   alone or "Hi, I'm Astrid"
 - Welcome flow copy: "Helena's Spelling Game" → "Astrid's Spell Lab" (or
   similar, finalized in the implementation plan)
 
-#### `astrid-learn/learner-profile` (was helena-learner-profile/)
+#### `dhasakgbb/learner-profile` (was helena-learner-profile/)
 
 - Add `AstridMascot` to:
   - the welcome page hero (`src/routes/+page.svelte`)
@@ -251,14 +251,14 @@ registered scope.
   - the hub page (`src/routes/hub/+page.svelte`) — Astrid as the launcher
 - Copy sweep: "Helena's Learner Profile" → "Astrid's Quiz" (or similar)
 
-#### `astrid-learn/states` (was helena-states/)
+#### `dhasakgbb/states` (was helena-states/)
 
 - Add `<script src="cdn.jsdelivr.net/.../astrid-mascot@v1.0.0/dist/index.iife.js">`
 - Astrid appears on the home / mode-selection view (alongside or replacing the compass logo)
 - Astrid appears on the end-of-session screen
 - Copy sweep: "Capitals Quest" → "Astrid's Map Room"
 
-#### `astrid-learn/math` (was helena-math/)
+#### `dhasakgbb/math` (was helena-math/)
 
 - Same IIFE pattern as states
 - Astrid on mode-selection view + end-of-round summary
@@ -289,7 +289,7 @@ registered scope.
 
 1. `gh repo list astrid-learn` returns the 5 repos.
 2. `git grep -in "helena" -- ':!docs/' ':!*.md'` across all 5 repos returns zero hits.
-3. `astrid-mascot` v1.0.0 (from `github.com/astrid-learn/astrid-mascot`) consumed by all 4 apps via the established git+https/jsDelivr distribution pattern.
+3. `astrid-mascot` v1.0.0 (from `github.com/dhasakgbb/astrid-mascot`) consumed by all 4 apps via the established git+https/jsDelivr distribution pattern.
 4. All 4 live deploys return HTTP 200 on their (possibly new) Vercel URLs.
 5. PLATFORM.md updated to describe the Astrid platform — mention the brand, the mascot, the four apps and their per-room names.
 
