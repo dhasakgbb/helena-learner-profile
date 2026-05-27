@@ -5,6 +5,44 @@ Single intake. Three learning modules. No shared backend between modules.
 
 ---
 
+## Shared schema package
+
+The canonical `ExportedProfile` schema and all cross-module helpers
+(VARK preference rankings, mode recommendation, fragment codec,
+telemetry readers) live in the `profile-schema` package at
+https://github.com/dhasakgbb/profile-schema. All four apps depend on it:
+
+- `helena-learner-profile` and `helena-spelling` depend via npm using
+  the git URL: `"profile-schema": "github:dhasakgbb/profile-schema#v1.0.0"`
+- `helena-states` and `helena-math` load via jsDelivr:
+  `<script src="https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js">`
+
+The IIFE exposes `window.HelenaProfile` (capital H). The lowercase
+`window.helenaProfile` is the per-app localStorage store in each
+vanilla consumer and is distinct.
+
+We deliberately did NOT publish to npm. The package name `profile-schema`
+is provisional — sub-project A (rebrand) will assign a final brand
+name, and a git-tag release avoids the publish-then-deprecate dance.
+Both `npm install <git-url>` and `cdn.jsdelivr.net/gh/...` read from
+the same v1.0.0 tag.
+
+We also skipped the synthetic drift simulation test (plan task D.20):
+the version contract is already proven by the live four-repo migration
+onto v1.0.0, which exercised the same code paths a simulated bump
+would have. Re-running the migration end-to-end is stronger evidence
+than a unit test that mocks it.
+
+Changing the schema is a coordinated release: bump the package, tag
+a new version, then update each consumer at its own cadence. Drift
+is no longer possible by construction — the schema lives in exactly
+one place.
+
+Spec: `docs/superpowers/specs/2026-05-26-shared-profile-schema-package-design.md`
+Plan: `docs/superpowers/plans/2026-05-26-shared-profile-schema-package-plan.md`
+
+---
+
 ## The shape
 
 ```
