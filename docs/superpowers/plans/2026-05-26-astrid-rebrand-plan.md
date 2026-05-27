@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebrand the platform from "Helena's …" everywhere to **Astrid** — a mascot-first brand built around the existing cyan-glow robot in `Spelling/src/components/MascotSVG.svelte`. Transfer all 5 repos to a new `astrid-kids` GitHub org, publish a shared `astrid-mascot` distribution package (mirroring `profile-schema`), integrate the mascot into all 4 apps, and sweep "Helena" code-level references.
+**Goal:** Rebrand the platform from "Helena's …" everywhere to **Astrid** — a mascot-first brand built around the existing cyan-glow robot in `Spelling/src/components/MascotSVG.svelte`. Transfer all 5 repos to a new `astrid-learn` GitHub org, publish a shared `astrid-mascot` distribution package (mirroring `profile-schema`), integrate the mascot into all 4 apps, and sweep "Helena" code-level references.
 
 **Architecture:** Three sequenced phases. **A1** transfers GitHub repos + updates cross-repo dep URLs + Vercel projects + code-level "Helena" → "Astrid" sweep. **A2** ships a new `astrid-mascot` git-tagged package (8 poses, ESM + CJS + IIFE builds, jsDelivr-from-gh distribution, same pattern as `profile-schema`). **A3** removes local mascot files from Spelling and integrates Astrid into the other three apps via the package. Each app keeps its own visual theme — the mascot is the only thing unified.
 
@@ -14,31 +14,31 @@
 
 ## Phase A1 — Infra rename
 
-### Task 1: Create the astrid-kids GitHub org and transfer all 5 repos
+### Task 1: Create the astrid-learn GitHub org and transfer all 5 repos
 
 **Files (mechanical infra ops, no local files):**
-- GitHub org `astrid-kids` (new)
-- 5 repos transferred from `dhasakgbb/*` to `astrid-kids/*` with possible rename
+- GitHub org `astrid-learn` (new)
+- 5 repos transferred from `dhasakgbb/*` to `astrid-learn/*` with possible rename
 
 - [ ] **Step 1: Create the org**
 
 ```bash
-gh api -X POST /admin/organizations -f login=astrid-kids -f admin=dhasakgbb -f profile_name="Astrid"
+gh api -X POST /admin/organizations -f login=astrid-learn -f admin=dhasakgbb -f profile_name="Astrid"
 ```
 
-If the API errors because creating orgs via the personal-access token requires a web flow (most personal accounts cannot create orgs via API), STOP and surface BLOCKED to the controller with the message: "Org creation needs web UI. Open https://github.com/organizations/new and create `astrid-kids` (Free plan, you = owner). Then re-dispatch this task."
+If the API errors because creating orgs via the personal-access token requires a web flow (most personal accounts cannot create orgs via API), STOP and surface BLOCKED to the controller with the message: "Org creation needs web UI. Open https://github.com/organizations/new and create `astrid-learn` (Free plan, you = owner). Then re-dispatch this task."
 
 Verify after creation:
 ```bash
-gh api orgs/astrid-kids --jq '.login'
+gh api orgs/astrid-learn --jq '.login'
 ```
-Expected: `astrid-kids`.
+Expected: `astrid-learn`.
 
 - [ ] **Step 2: Transfer the 5 repos**
 
 ```bash
 for repo in profile-schema helena-learner-profile helena-spelling helena-states helena-math; do
-  gh api -X POST /repos/dhasakgbb/$repo/transfer -f new_owner=astrid-kids
+  gh api -X POST /repos/dhasakgbb/$repo/transfer -f new_owner=astrid-learn
 done
 ```
 
@@ -47,10 +47,10 @@ Each transfer makes GitHub install a 301 redirect at the old URL automatically.
 - [ ] **Step 3: Rename the four `helena-*` repos**
 
 ```bash
-gh api -X PATCH /repos/astrid-kids/helena-learner-profile -f name=learner-profile
-gh api -X PATCH /repos/astrid-kids/helena-spelling -f name=spelling
-gh api -X PATCH /repos/astrid-kids/helena-states -f name=states
-gh api -X PATCH /repos/astrid-kids/helena-math -f name=math
+gh api -X PATCH /repos/astrid-learn/helena-learner-profile -f name=learner-profile
+gh api -X PATCH /repos/astrid-learn/helena-spelling -f name=spelling
+gh api -X PATCH /repos/astrid-learn/helena-states -f name=states
+gh api -X PATCH /repos/astrid-learn/helena-math -f name=math
 ```
 
 (`profile-schema` was never `helena-*`, so it stays as `profile-schema`.)
@@ -58,7 +58,7 @@ gh api -X PATCH /repos/astrid-kids/helena-math -f name=math
 - [ ] **Step 4: Verify on GitHub**
 
 ```bash
-gh repo list astrid-kids --json name --jq '.[].name'
+gh repo list astrid-learn --json name --jq '.[].name'
 ```
 Expected: `profile-schema`, `learner-profile`, `spelling`, `states`, `math`.
 
@@ -76,11 +76,11 @@ No local commits. Move to Task 2.
 - [ ] **Step 1: For each repo, set the new origin URL**
 
 ```bash
-git -C /Users/damian/GitHub/Helena/profile-schema remote set-url origin https://github.com/astrid-kids/profile-schema.git
-git -C /Users/damian/GitHub/Helena/helena-learner-profile remote set-url origin https://github.com/astrid-kids/learner-profile.git
-git -C /Users/damian/GitHub/Helena/Spelling remote set-url origin https://github.com/astrid-kids/spelling.git
-git -C /Users/damian/GitHub/Helena/helena-states remote set-url origin https://github.com/astrid-kids/states.git
-git -C /Users/damian/GitHub/Helena/helena-math remote set-url origin https://github.com/astrid-kids/math.git
+git -C /Users/damian/GitHub/Helena/profile-schema remote set-url origin https://github.com/astrid-learn/profile-schema.git
+git -C /Users/damian/GitHub/Helena/helena-learner-profile remote set-url origin https://github.com/astrid-learn/learner-profile.git
+git -C /Users/damian/GitHub/Helena/Spelling remote set-url origin https://github.com/astrid-learn/spelling.git
+git -C /Users/damian/GitHub/Helena/helena-states remote set-url origin https://github.com/astrid-learn/states.git
+git -C /Users/damian/GitHub/Helena/helena-math remote set-url origin https://github.com/astrid-learn/math.git
 ```
 
 Note: working-tree directory names (`helena-learner-profile/`, `Spelling/`, etc.) are NOT renamed in this task. Renaming local directories breaks editor projects and shell history; the implementer can rename later if desired. The git remote is what consumers (CI, Vercel) read.
@@ -94,7 +94,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Each entry's URL should start with `https://github.com/astrid-kids/`.
+Each entry's URL should start with `https://github.com/astrid-learn/`.
 
 - [ ] **Step 3: Smoke-test a fetch from each new remote**
 
@@ -105,7 +105,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Expected: no errors. Each prints "From https://github.com/astrid-kids/..." or silent success.
+Expected: no errors. Each prints "From https://github.com/astrid-learn/..." or silent success.
 
 - [ ] **Step 4: No commit — this is local-config only.**
 
@@ -124,7 +124,7 @@ Expected: no errors. Each prints "From https://github.com/astrid-kids/..." or si
 Open `/Users/damian/GitHub/Helena/helena-learner-profile/package.json`. Find the `profile-schema` dep entry (look for `dhasakgbb/profile-schema` or `github:dhasakgbb`) and change it to:
 
 ```json
-"profile-schema": "github:astrid-kids/profile-schema#v1.0.0"
+"profile-schema": "github:astrid-learn/profile-schema#v1.0.0"
 ```
 
 Then:
@@ -141,7 +141,7 @@ This refetches the dep from the new URL into node_modules.
 Same change in `/Users/damian/GitHub/Helena/Spelling/package.json`:
 
 ```json
-"profile-schema": "github:astrid-kids/profile-schema#v1.0.0"
+"profile-schema": "github:astrid-learn/profile-schema#v1.0.0"
 ```
 
 Then:
@@ -159,10 +159,10 @@ Open `/Users/damian/GitHub/Helena/helena-states/index.html`. Find the line:
 <script src="https://cdn.jsdelivr.net/gh/dhasakgbb/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
-Replace `dhasakgbb` with `astrid-kids`:
+Replace `dhasakgbb` with `astrid-learn`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/astrid-kids/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 - [ ] **Step 4: Update math CDN URL**
@@ -181,7 +181,7 @@ Both should print a path under their own `node_modules/profile-schema/`.
 For the vanilla apps, smoke-test the CDN:
 
 ```bash
-curl -sI https://cdn.jsdelivr.net/gh/astrid-kids/profile-schema@v1.0.0/dist/index.iife.js | head -1
+curl -sI https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js | head -1
 ```
 
 Expected: `HTTP/2 200`.
@@ -191,25 +191,25 @@ Expected: `HTTP/2 200`.
 ```bash
 cd /Users/damian/GitHub/Helena/helena-learner-profile
 git add package.json package-lock.json
-git commit -m "chore(deps): repoint profile-schema dep at astrid-kids org
+git commit -m "chore(deps): repoint profile-schema dep at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
 cd /Users/damian/GitHub/Helena/Spelling
 git add package.json package-lock.json
-git commit -m "chore(deps): repoint profile-schema dep at astrid-kids org
+git commit -m "chore(deps): repoint profile-schema dep at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
 cd /Users/damian/GitHub/Helena/helena-states
 git add index.html
-git commit -m "chore: repoint profile-schema CDN at astrid-kids org
+git commit -m "chore: repoint profile-schema CDN at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 
 cd /Users/damian/GitHub/Helena/helena-math
 git add index.html
-git commit -m "chore: repoint profile-schema CDN at astrid-kids org
+git commit -m "chore: repoint profile-schema CDN at astrid-learn org
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ```
@@ -418,7 +418,7 @@ Expected: minimal hits (only the explicitly-allowed patterns).
 | `helena-math/README.md` | Title → "Astrid's Number Garden" |
 
 Each README also adds a one-line top-of-file note:
-> Part of the **Astrid** platform — see [PLATFORM.md](https://github.com/astrid-kids/learner-profile/blob/main/docs/PLATFORM.md).
+> Part of the **Astrid** platform — see [PLATFORM.md](https://github.com/astrid-learn/learner-profile/blob/main/docs/PLATFORM.md).
 
 - [ ] **Step 2: Update PLATFORM.md introduction**
 
@@ -473,7 +473,7 @@ for d in profile-schema helena-learner-profile Spelling helena-states helena-mat
 done
 ```
 
-Each push goes to the new `github.com/astrid-kids/<name>.git` remote (set in Task 2).
+Each push goes to the new `github.com/astrid-learn/<name>.git` remote (set in Task 2).
 
 - [ ] **Step 2: Watch Vercel redeploy**
 
@@ -677,7 +677,7 @@ Astrid the cyan-glow robot mascot for the Astrid learning platform.
 ## Install (TypeScript / ESM)
 
 \`\`\`bash
-npm install "astrid-mascot@github:astrid-kids/astrid-mascot#v1.0.0"
+npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
 \`\`\`
 
 \`\`\`ts
@@ -687,7 +687,7 @@ import { AstridMascot, svgFor, POSES, tokens } from 'astrid-mascot';
 ## Install (Vanilla JS via CDN)
 
 \`\`\`html
-<script src="https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js"></script>
 <script>
   const node = document.getElementById('hero');
   window.AstridMascot.renderInto(node, { pose: 'waving', size: 140 });
@@ -1519,16 +1519,16 @@ git tag -a v1.0.0 -m "Release 1.0.0 — Astrid mascot for the Astrid platform"
 - [ ] **Step 6: Create the GitHub repo and push**
 
 ```bash
-gh repo create astrid-kids/astrid-mascot --public --source=. --remote=origin --push --description "Astrid the cyan-glow robot mascot — SVG poses, Svelte component, IIFE bundle for the Astrid learning platform"
+gh repo create astrid-learn/astrid-mascot --public --source=. --remote=origin --push --description "Astrid the cyan-glow robot mascot — SVG poses, Svelte component, IIFE bundle for the Astrid learning platform"
 git push origin v1.0.0
 ```
 
-If `astrid-kids` org doesn't exist yet, this will fail — go back to Task 1.
+If `astrid-learn` org doesn't exist yet, this will fail — go back to Task 1.
 
 - [ ] **Step 7: Verify on GitHub**
 
 ```bash
-gh api repos/astrid-kids/astrid-mascot/tags --jq '.[].name' | head -3
+gh api repos/astrid-learn/astrid-mascot/tags --jq '.[].name' | head -3
 ```
 
 Expected: `v1.0.0` in output.
@@ -1536,7 +1536,7 @@ Expected: `v1.0.0` in output.
 - [ ] **Step 8: Wait for jsDelivr to fetch + smoke-test**
 
 ```bash
-until curl -fsSI -m 5 "https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js" >/dev/null 2>&1; do
+until curl -fsSI -m 5 "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" >/dev/null 2>&1; do
   echo "waiting for jsDelivr to fetch the tag..."
   sleep 5
 done
@@ -1546,7 +1546,7 @@ echo "jsDelivr is serving."
 - [ ] **Step 9: String-check the jsDelivr-served bundle**
 
 ```bash
-curl -fsS "https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js" -o /tmp/astrid-iife.js
+curl -fsS "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" -o /tmp/astrid-iife.js
 wc -c /tmp/astrid-iife.js
 grep -c "window.AstridMascot" /tmp/astrid-iife.js
 grep -c "POSES" /tmp/astrid-iife.js
@@ -1571,7 +1571,7 @@ All positive. A2 complete.
 
 ```bash
 cd /Users/damian/GitHub/Helena/Spelling
-npm install "astrid-mascot@github:astrid-kids/astrid-mascot#v1.0.0"
+npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
 ```
 
 Verify:
@@ -1669,7 +1669,7 @@ git push origin HEAD
 
 ```bash
 cd /Users/damian/GitHub/Helena/helena-learner-profile
-npm install "astrid-mascot@github:astrid-kids/astrid-mascot#v1.0.0"
+npm install "astrid-mascot@github:astrid-learn/astrid-mascot#v1.0.0"
 ```
 
 - [ ] **Step 2: Add Astrid to the welcome page hero (waving pose)**
@@ -1787,7 +1787,7 @@ Find the existing profile-schema CDN line. Add a sibling line for astrid-mascot 
 ```html
 <!-- Astrid mascot — exposes window.AstridMascot. Load before app.js so
      app.js can call window.AstridMascot.renderInto(...) during init. -->
-<script src="https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 - [ ] **Step 2: Add a mascot mount point in the home view**
@@ -1901,7 +1901,7 @@ Same pattern as helena-states.
 - [ ] **Step 1: Add the CDN script to index.html**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js" crossorigin="anonymous"></script>
 ```
 
 Place before `app.js`.
@@ -2014,10 +2014,10 @@ done
 
 Expected: empty output (only allowed historic patterns remain).
 
-- [ ] **Step 2: All 6 repos under astrid-kids**
+- [ ] **Step 2: All 6 repos under astrid-learn**
 
 ```bash
-gh repo list astrid-kids --json name --jq '.[].name' | sort
+gh repo list astrid-learn --json name --jq '.[].name' | sort
 ```
 
 Expected: `astrid-mascot`, `learner-profile`, `math`, `profile-schema`, `spelling`, `states`.
@@ -2042,8 +2042,8 @@ Each: 200.
 
 ```bash
 for url in \
-  "https://cdn.jsdelivr.net/gh/astrid-kids/profile-schema@v1.0.0/dist/index.iife.js" \
-  "https://cdn.jsdelivr.net/gh/astrid-kids/astrid-mascot@v1.0.0/dist/index.iife.js"; do
+  "https://cdn.jsdelivr.net/gh/astrid-learn/profile-schema@v1.0.0/dist/index.iife.js" \
+  "https://cdn.jsdelivr.net/gh/astrid-learn/astrid-mascot@v1.0.0/dist/index.iife.js"; do
   echo "$url -> $(curl -sI -o /dev/null -w '%{http_code}' -m 8 "$url")"
 done
 ```
@@ -2079,8 +2079,8 @@ Add at the end of `/Users/damian/GitHub/Helena/helena-learner-profile/docs/PLATF
 **Sub-project A status:** complete, 2026-05-26.
 
 The platform now ships under the Astrid brand. The mascot lives in
-`astrid-mascot` (git tag v1.0.0 at https://github.com/astrid-kids/astrid-mascot).
-All 5 repos are at `github.com/astrid-kids/*`. Domain registration is
+`astrid-mascot` (git tag v1.0.0 at https://github.com/astrid-learn/astrid-mascot).
+All 5 repos are at `github.com/astrid-learn/*`. Domain registration is
 deferred — the rebrand stands on the GitHub org and Vercel project
 names alone until commercial-readiness sub-projects (B, C, F) decide
 on a hosting domain.
@@ -2093,7 +2093,7 @@ cd /Users/damian/GitHub/Helena/helena-learner-profile
 git add docs/PLATFORM.md
 git commit -m "docs(platform): mark sub-project A complete
 
-Astrid rebrand shipped: github.com/astrid-kids org, mascot package
+Astrid rebrand shipped: github.com/astrid-learn org, mascot package
 published, 4 apps consume from it.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -2106,7 +2106,7 @@ git push origin HEAD
 
 Acceptance criteria from the spec are now mechanically verifiable:
 
-1. ✅ `gh repo list astrid-kids` returns 6 repos (5 platform + new astrid-mascot) — Tasks 1, 14
+1. ✅ `gh repo list astrid-learn` returns 6 repos (5 platform + new astrid-mascot) — Tasks 1, 14
 2. ✅ `git grep -in "helena"` returns no code-level hits across the 5 repos (only allowed historic patterns) — Tasks 6, 19
 3. ✅ `astrid-mascot` v1.0.0 published, 8 poses, served via jsDelivr, consumed by all 4 apps — Tasks 9–18
 4. ✅ All 4 live deploys return HTTP 200 with Astrid visible in the home views — Task 19
