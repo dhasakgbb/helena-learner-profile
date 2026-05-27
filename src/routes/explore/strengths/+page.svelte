@@ -43,7 +43,7 @@
 </script>
 
 <svelte:head>
-	<title>Strengths — Helena's Learner Profile</title>
+	<title>Strengths — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-5">

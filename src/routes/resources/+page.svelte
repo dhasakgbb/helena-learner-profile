@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-	<title>Strategies & resources — Helena's Learner Profile</title>
+	<title>Strategies & resources — Astrid's Quiz</title>
 </svelte:head>
 
 <main class="shell">
@@ -31,9 +31,9 @@
 		<a
 			href="/"
 			class="font-display text-[1.1rem] no-underline text-[var(--color-ink)]"
-			aria-label="Helena's Learner Profile home"
+			aria-label="Astrid's Quiz home"
 		>
-			Helena<span class="text-[var(--color-rust)]">.</span>
+			Astrid<span class="text-[var(--color-rust)]">.</span>
 		</a>
 		<span class="eyebrow mt-3">Field guide</span>
 		<h1 class="m-0 font-display">Strategies & resources</h1>

@@ -84,7 +84,7 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard — Helena's Learner Profile</title>
+	<title>Dashboard — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-6">

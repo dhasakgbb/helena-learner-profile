@@ -171,7 +171,7 @@
 </script>
 
 <svelte:head>
-	<title>Items — Helena's Learner Profile</title>
+	<title>Items — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-6">

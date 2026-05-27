@@ -7,7 +7,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Helena's Learner Profile</title>
+	<title>Astrid's Quiz</title>
 </svelte:head>
 
 {@render children()}

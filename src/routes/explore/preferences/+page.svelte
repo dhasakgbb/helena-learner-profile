@@ -43,7 +43,7 @@
 </script>
 
 <svelte:head>
-	<title>Preferences — Helena's Learner Profile</title>
+	<title>Preferences — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-5">

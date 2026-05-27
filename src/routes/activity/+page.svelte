@@ -95,7 +95,7 @@
 		const parsed = exportedProfileSchema.safeParse(json);
 		if (!parsed.success) {
 			const issue = parsed.error.issues[0]?.message ?? 'unknown validation error';
-			parseError = "Doesn't look like a Helena profile (" + issue + ').';
+			parseError = "Doesn't look like an Astrid profile (" + issue + ').';
 			return;
 		}
 		profile = parsed.data;
@@ -119,7 +119,7 @@
 </script>
 
 <svelte:head>
-	<title>App activity — Helena's Learner Profile</title>
+	<title>App activity — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-6">

@@ -41,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>Privacy & data — Helena's Learner Profile</title>
+	<title>Privacy & data — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-5">

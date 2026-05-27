@@ -15,7 +15,7 @@
 </script>
 
 <svelte:head>
-	<title>Helena's Learner Profile — Welcome</title>
+	<title>Astrid's Quiz — Welcome</title>
 </svelte:head>
 
 <main class="shell">
@@ -42,8 +42,8 @@
 				<path d="M42 50c1 3 1 6 0 8" opacity="0.5" />
 			</svg>
 			<div>
-				<p class="eyebrow m-0">Helena's</p>
-				<h1 class="m-0 font-display">Learner Profile</h1>
+				<p class="eyebrow m-0">Astrid's</p>
+				<h1 class="m-0 font-display">Quiz</h1>
 			</div>
 		</div>
 	</header>

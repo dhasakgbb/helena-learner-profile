@@ -51,7 +51,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign up — Helena's Learner Profile</title>
+	<title>Sign up — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="card max-w-md mx-auto flex flex-col gap-5">

@@ -48,7 +48,7 @@
 </script>
 
 <svelte:head>
-	<title>Tricky bits — Helena's Learner Profile</title>
+	<title>Tricky bits — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-5">

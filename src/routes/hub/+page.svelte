@@ -66,7 +66,7 @@
 </script>
 
 <svelte:head>
-	<title>Hub — Helena's Learner Profile</title>
+	<title>Hub — Astrid's Quiz</title>
 </svelte:head>
 
 <main class="shell">
@@ -74,11 +74,11 @@
 		<a
 			href="/"
 			class="font-display text-[1.1rem] no-underline text-[var(--color-ink)]"
-			aria-label="Helena's Learner Profile home"
+			aria-label="Astrid's Quiz home"
 		>
-			Helena<span class="text-[var(--color-rust)]">.</span>
+			Astrid<span class="text-[var(--color-rust)]">.</span>
 		</a>
-		<span class="eyebrow mt-3">Helena's hub</span>
+		<span class="eyebrow mt-3">Astrid's hub</span>
 		<h1 class="m-0 font-display">Pick a game.</h1>
 		<p class="m-0 text-[var(--color-ink-soft)]">
 			Each game will set sensible defaults based on your most recent learner profile. You can

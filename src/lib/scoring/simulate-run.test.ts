@@ -125,7 +125,7 @@ function render(personaName: string, run: RunPayload) {
 	}
 
 	out.push('\n── what the PDF would print ──\n');
-	out.push(`  Helena's Learner Profile · ${new Date(run.taken_at).toLocaleDateString()}`);
+	out.push(`  Astrid's Quiz · ${new Date(run.taken_at).toLocaleDateString()}`);
 	out.push(`  Recommended next step: ${PLAN_HEADLINE[plan]}`);
 
 	console.log(out.join('\n'));

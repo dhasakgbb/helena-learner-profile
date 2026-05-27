@@ -24,14 +24,14 @@ describe('buildExportedProfile', () => {
 
 	it('produces a profile that round-trips through its own zod schema', () => {
 		const fixed = new Date('2026-05-26T12:00:00Z');
-		const profile = buildExportedProfile(run, { childLabel: 'Helena', now: fixed });
+		const profile = buildExportedProfile(run, { childLabel: 'Astrid', now: fixed });
 		const parsed = exportedProfileSchema.parse(profile);
 		expect(parsed.version).toBe(PROFILE_VERSION);
 		expect(parsed.generated_at).toBe(fixed.toISOString());
 		// expires = now + 60d
 		const expectedExpiry = new Date(fixed.getTime() + PROFILE_TTL_DAYS * 86400 * 1000);
 		expect(parsed.expires_at).toBe(expectedExpiry.toISOString());
-		expect(parsed.child_label).toBe('Helena');
+		expect(parsed.child_label).toBe('Astrid');
 	});
 
 	it('exports strengths as human-readable prompts not raw item IDs', () => {

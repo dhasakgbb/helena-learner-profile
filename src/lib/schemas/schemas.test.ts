@@ -24,14 +24,14 @@ describe('credentialsSchema', () => {
 
 describe('childCreateSchema', () => {
 	it('accepts valid child', () => {
-		expect(childCreateSchema.parse({ display_name: 'Helena', birth_year: 2015 })).toEqual({
-			display_name: 'Helena',
+		expect(childCreateSchema.parse({ display_name: 'Astrid', birth_year: 2015 })).toEqual({
+			display_name: 'Astrid',
 			birth_year: 2015
 		});
 	});
 	it('rejects birth_year outside range', () => {
 		expect(() =>
-			childCreateSchema.parse({ display_name: 'Helena', birth_year: 1990 })
+			childCreateSchema.parse({ display_name: 'Astrid', birth_year: 1990 })
 		).toThrow();
 	});
 });

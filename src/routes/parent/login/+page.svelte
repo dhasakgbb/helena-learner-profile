@@ -49,7 +49,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign in — Helena's Learner Profile</title>
+	<title>Sign in — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="card max-w-md mx-auto flex flex-col gap-5">

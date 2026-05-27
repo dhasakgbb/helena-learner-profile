@@ -68,7 +68,7 @@
 	let pdfError = $state<string | null>(null);
 
 	// Profile JSON export (Step 1 of the platform-as-config plan)
-	const exportedProfile = $derived(buildExportedProfile(run, { childLabel: 'Helena' }));
+	const exportedProfile = $derived(buildExportedProfile(run, { childLabel: 'Astrid' }));
 	const exportedProfileText = $derived(formatProfile(exportedProfile));
 	let profileExpanded = $state(false);
 	let profileCopied = $state(false);
@@ -95,7 +95,7 @@
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `helena-learner-profile-${new Date().toISOString().slice(0, 10)}.json`;
+			a.download = `astrid-quiz-${new Date().toISOString().slice(0, 10)}.json`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
@@ -152,7 +152,7 @@
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `helena-learner-profile-${new Date().toISOString().slice(0, 10)}.pdf`;
+			a.download = `astrid-quiz-${new Date().toISOString().slice(0, 10)}.pdf`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
@@ -215,7 +215,7 @@
 </script>
 
 <svelte:head>
-	<title>Your Learning Menu — Helena's Learner Profile</title>
+	<title>Your Learning Menu — Astrid's Quiz</title>
 </svelte:head>
 
 <section class="flex flex-col gap-6">
@@ -435,11 +435,11 @@
 
 	<article class="card flex flex-col gap-4 reveal" style:--i="7" data-no-print>
 		<div class="flex flex-col gap-1">
-			<span class="eyebrow eyebrow-sky">For Helena's other games</span>
+			<span class="eyebrow eyebrow-sky">For Astrid's other games</span>
 			<h2 class="m-0 font-display">Carry this profile along.</h2>
 		</div>
 		<p class="m-0 text-[var(--color-ink-soft)] text-[0.95rem]">
-			This is a small file that other Helena games can read to set sensible defaults —
+			This is a small file that other Astrid games can read to set sensible defaults —
 			audio-first vs. visual-first modes, session length, that kind of thing. It does not
 			lock you into any one way to learn. You can always switch modes inside each game.
 		</p>

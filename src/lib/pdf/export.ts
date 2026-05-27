@@ -39,7 +39,7 @@ function wrapLines(text: string, maxChars: number): string[] {
 	return lines;
 }
 
-export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Promise<Blob> {
+export async function exportRunToPdf(run: RunPayload, childName = 'Astrid'): Promise<Blob> {
 	const doc = await PDFDocument.create();
 	const page = doc.addPage([595, 842]);
 	const { width, height } = page.getSize();
@@ -68,7 +68,7 @@ export async function exportRunToPdf(run: RunPayload, childName = 'Helena'): Pro
 
 	let y = height - margin;
 
-	page.drawText("Helena's Learner Profile", { x: margin, y, font: serifBold, size: 22, color: ink });
+	page.drawText("Astrid's Quiz", { x: margin, y, font: serifBold, size: 22, color: ink });
 	y -= 26;
 	page.drawText(
 		`A learning exploration summary for ${childName} · ${new Date(run.taken_at).toLocaleDateString()}`,
