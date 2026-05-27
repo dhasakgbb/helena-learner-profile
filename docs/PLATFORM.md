@@ -1,7 +1,38 @@
-# Helena Platform — Architecture
+# Astrid Platform — Architecture
 
 Four-app ecosystem connected by a small versioned JSON contract.
 Single intake. Three learning modules. No shared backend between modules.
+
+---
+
+## Brand
+
+The platform is **Astrid** — a friendly cyan-glow robot mascot who hosts
+four learning environments. Each environment is a "place" Astrid takes
+the kid to:
+
+- **Astrid's Quiz** — the 28-question learning-profile assessment
+- **Astrid's Spell Lab** — arcade spelling practice with five modes
+- **Astrid's Map Room** — US capitals via Road Trip / Quest / Quiz
+- **Astrid's Number Garden** — math practice in three modes
+
+Astrid herself doesn't change. Each app keeps its own visual world (we
+deliberately did NOT unify palettes) — the constant is the mascot, the
+variable is the room. See
+`docs/superpowers/specs/2026-05-26-astrid-rebrand-design.md` for the
+design rationale.
+
+The 5 GitHub repos live under `dhasakgbb/*` (no org — pre-revenue
+simplification): `profile-schema`, `learner-profile`, `spelling`,
+`states`, `math`, plus the upcoming `astrid-mascot`. `helena-*.vercel.app`
+URLs are kept until a custom domain is registered; the rebrand at
+the public-URL layer is deferred to the domain-registration task.
+
+The IIFE namespace `window.HelenaProfile` (capital H) is kept as a
+historic identifier pinned by the shared schema package — renaming it
+would force coordinated bumps across all consumer apps for no real
+benefit. The lowercase `window.helenaProfile` is the per-app
+localStorage store and is distinct.
 
 ---
 

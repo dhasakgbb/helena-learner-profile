@@ -1,4 +1,4 @@
-# Helena's Learner Profile
+# Astrid's Quiz — Learner Profile
 
 A child-friendly web app that helps a 10-year-old (and her parent) explore:
 
