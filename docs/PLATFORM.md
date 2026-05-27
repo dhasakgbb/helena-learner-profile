@@ -291,3 +291,25 @@ Add the banner DOM + a `RECOMMENDED` pip CSS rule. Ship it. ~20 minutes.
 - Any clinical-screening claim
 
 The platform exists for **one family**. It's intentionally over-engineered just enough to be portable to a second family if anyone wants to fork it.
+
+---
+
+**Sub-project A status:** complete, 2026-05-26.
+
+The Astrid rebrand shipped end-to-end:
+
+- 4 GitHub repos renamed in place under `dhasakgbb` (`learner-profile`, `spelling`, `states`, `math`). Old `helena-*` URLs return 301.
+- Local working trees renamed to match.
+- Vercel projects renamed to drop the `helena-` prefix (public `.vercel.app` URLs intentionally kept at `helena-*` until a custom domain lands — option 1 in the URL decision).
+- "Helena" swept out of code-level identifiers and display copy across 5 repos. Allowed historic patterns kept: `window.HelenaProfile` (shared-package IIFE namespace), `window.helenaProfile` (per-app store), localStorage keys, and the state of Montana whose capital is literally Helena.
+- New `astrid-mascot` package shipped at `github.com/dhasakgbb/astrid-mascot@v1.0.0` with 8 poses (idle / happy / sad / wow / waving / thinking / sleeping / cheering). Same git+jsDelivr distribution as `profile-schema`. 27 tests pass; DOMParser-based `renderInto` (no innerHTML write).
+- Astrid mascot integrated:
+  - Spelling: local `Mascot.svelte` / `MascotSVG.svelte` deleted (-337 lines), Hub now imports `svgFor` from the package.
+  - learner-profile: welcome page hero replaces the previous abstract glyph with Astrid waving.
+  - states + math: jsDelivr `<script>` tag + `astridHomeMount` div + `mountAstridHome()` call in `DOMContentLoaded`.
+- All 4 deploys return HTTP 200. astrid-mascot CDN serves 200.
+
+V4 evidence-loop reframe (red-team/blue-team debate) acknowledged: pose names stay generic but README maps them to kid-state moments (correct-with-understanding, wrong-with-misconception, etc.). Future v1.1 of the schema package will formalize structured learning events; A1 ships the surface, not the loop.
+
+Domain registration remains deferred. Trademark search remains deferred. Both are pre-paid-marketing tasks, not pre-MVP.
+
